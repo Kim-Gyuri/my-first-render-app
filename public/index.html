@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Render 배포 예시</title>
+</head>
+<body>
+  <h1>Render 배포 성공 🎉</h1>
+  <button id="btn">유저 불러오기</button>
+  <ul id="list"></ul>
+
+  <script>
+    document.getElementById("btn").addEventListener("click", async () => {
+      const res = await fetch("/users");
+      const data = await res.json();
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+      data.forEach(user => {
+        const li = document.createElement("li");
+        li.textContent = `${user.id} - ${user.name}`;
+        list.appendChild(li);
+      });
+    });
+  </script>
+</body>
+</html>
