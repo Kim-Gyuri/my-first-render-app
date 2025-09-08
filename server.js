@@ -1,16 +1,17 @@
 const express = require("express");
 const { Pool } = require("pg");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// PostgreSQL 연결
+// Render PostgreSQL 연결
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // Render PostgreSQL 연결 시 필요
+  ssl: { rejectUnauthorized: false }, // Render에서 필요
 });
 
-// 정적 파일 서빙 (public 폴더)
+// 정적 파일 서빙
 app.use(express.static("public"));
 
 // API 예시: 모든 유저 조회
@@ -25,5 +26,5 @@ app.get("/users", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
