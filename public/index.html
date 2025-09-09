@@ -1,27 +1,264 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Render 배포 예시</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanrio Love</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script> <!-- Bootstrap JavaScript 추가 -->
+    <link href="./css/styles.css" rel="stylesheet" />
+    <link href='./'
+
 </head>
 <body>
-  <h1>Render 배포 성공 🎉</h1>
-  <button id="btn">유저 불러오기</button>
-  <ul id="list"></ul>
+<!-- Navigation-->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container px-4 px-lg-5">
+        <a id="logo-link" class="logo-style" href="/view/home">Sanrio Love</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown1" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">판매</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
+                        <li><a class="dropdown-item" href="/view/write/item">상품 등록</a></li>
+                        <li><a class="dropdown-item" href="/view/sale">판매 상품 리스트</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown2" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">검색</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown2">
+                        <li class="dropdown-submenu-made">
+                            <a class="dropdown-item dropdown-toggle" data-category="POPULAR_SEARCH" href="#">인기 검색어</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="DOLL" href="#">인형</a></li>
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="KEYRING_CHARM" href="#">키링</a></li>
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="BROOCH_BADGE" href="#">브로치/뱃지</a></li>
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="ACRYLIC_STAND" href="#">아크릴 스탠드</a></li>
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="CAPSULE_TOY" href="#">캡슐토이/가챠</a></li>
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="FIGURE" href="#">피규어</a></li>
+                                <li><a class="dropdown-item" data-category="POPULAR_SEARCH" data-subcategory="CARD_TYPE" href="#">카드류</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-submenu-made">
+                            <a class="dropdown-item dropdown-toggle" data-category="PHOTOCARD_DECOR" href="#">포카 꾸미기</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-category="PHOTOCARD_DECOR" data-subcategory="PHOTOCARD_HOLDER" href="#">포카카드 홀더</a></li>
+                                <li><a class="dropdown-item" data-category="PHOTOCARD_DECOR" data-subcategory="TOPLOADER_SLEEVE" href="#">탑로더/슬리브</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-submenu-made">
+                            <a class="dropdown-item dropdown-toggle" data-category="DESK_DECOR" href="#">책상 꾸미기</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="DESK_FIGURE" href="#">피규어</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="HUMIDIFIER" href="#">가습기</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="KEYBOARD" href="#">키보드</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="KEYCAP" href="#">키캡</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="MOUSE" href="#">마우스</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="DESK_CLOCK" href="#">탁상시계</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="HANDY_FAN" href="#">핸디팬</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="BLUETOOTH" href="#">블루투스</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="MOUSE_PAD" href="#">마우스 패드</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="AIR_FRESHENER" href="#">방향제</a></li>
+                                <li><a class="dropdown-item" data-category="DESK_DECOR" data-subcategory="USB_MULTI_HUB" href="#">USB 멀티허브</a></li>
+                            </ul>
+                        </li>
+                        <li class="dropdown-submenu-made">
+                            <a class="dropdown-item dropdown-toggle" data-category="JOURNAL_STATIONERY" href="#">다꾸/문구</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="STICKER" href="#">스티커</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="MASKING_TAPE" href="#">마스킹테이프</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="MEMO_PAD" href="#">메모지</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="LETTER_PAPER" href="#">편지지</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="POSTCARD" href="#">엽서</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="STAMP" href="#">스탬프</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="DIARY" href="#">다이어리</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="CALENDAR" href="#">달력</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="NOTE" href="#">노트</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="FILE_BINDER" href="#">파일/바인더</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="PEN_HOLDER" href="#">펜꽂이</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="OFFICE_SUPPLIES" href="#">사무용품</a></li>
+                                <li><a class="dropdown-item" data-category="JOURNAL_STATIONERY" data-subcategory="PHONE_STRAP" href="#">휴대폰 스트랩</a></li>
+                            </ul>
+                        </li>
 
-  <script>
-    document.getElementById("btn").addEventListener("click", async () => {
-      const res = await fetch("/users");
-      const data = await res.json();
-      const list = document.getElementById("list");
-      list.innerHTML = "";
-      data.forEach(user => {
-        const li = document.createElement("li");
-        li.textContent = `${user.id} - ${user.name}`;
-        list.appendChild(li);
-      });
+                        <li class="dropdown-submenu-made">
+                            <a class="dropdown-item dropdown-toggle" data-category="WRITING_INSTRUMENTS" href="#">필기류</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-category="WRITING_INSTRUMENTS" data-subcategory="BALLPOINT_PEN" href="#">볼펜</a></li>
+                                <li><a class="dropdown-item" data-category="WRITING_INSTRUMENTS" data-subcategory="MECHANICAL_PENCIL" href="#">샤프</a></li>
+                            </ul>
+                        </li>
+
+                        <li class="dropdown-submenu-made">
+                            <a class="dropdown-item dropdown-toggle" data-category="ACCESSORIES" href="#">소품</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="BALLPOINT_PEN" href="#">헤어템</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="MIRROR" href="#">거울</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="WALLET" href="#">지갑</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="BAG" href="#">가방</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="STORAGE_ORGANIZATION" href="#">수납/정리</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="CUSHION_BLANKET" href="#">쿠션/담요</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="MAGNET" href="#">자석</a></li>
+                                <li><a class="dropdown-item" data-category="ACCESSORIES" data-subcategory="POUCH_CASE" href="#">파우치/케이스</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="ml-auto">
+                <div class="form-inline">
+                    <form class="btn-custom">
+                        <a href="/view/user/order" data-bs-toggle="tooltip" data-bs-placement="top" title="주문 조회"><i class="bi-cart me-1"></i></a>
+                    </form>
+                    <form class="btn-custom">
+                        <a href="/view/user/wish" data-bs-toggle="tooltip" data-bs-placement="top" title="찜 리스트"><i class="bi-heart me-1"></i></a>
+                    </form>
+
+
+                    <!-- 알림 버튼과 아이콘 -->
+                    <form class="btn-custom" id="notification-button">
+                        <i class="bi-bell me-2" href="#" data-toggle="tooltip" data-placement="top" title="알림"></i>
+                        <span id="notification-count" class="badge-custom bg-dark text-white ms-1 rounded-pill">0</span>
+                    </form>
+
+                    <!-- 모달 구조 -->
+                    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-labelledby="notificationModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="notificationModalLabel">알림 메시지</h5>
+                                    <!-- 닫기 버튼 -->
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body" id="notification-list">
+                                    <!-- 알림 메시지 목록이 여기에 표시됩니다. -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="btn btn-custom" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="bi-person me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="프로필◦로그아웃"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li><a class="dropdown-item" href="/view/update/user">프로필 편집</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">로그아웃</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<br><br>
+<div class="image-grid">
+    <div class="image-container" data-sanrio-character="CINNAMOROLL" data-default-img="./static/images/cinnamoroll.png" data-selected-img="./static/images/cinn_pick.png">
+        <img src="./static/images/cinnamoroll.png" alt="Image 1">
+    </div>
+    <div class="image-container" data-sanrio-character="POCHACCO" data-default-img="./static/images/pochaco.png" data-selected-img="./static/images/pochaco_pick.png">
+        <img src="./static/images/pochaco.png" alt="Image 2">
+    </div>
+    <div class="image-container" data-sanrio-character="KUROMI" data-default-img="./static/images/kuromi.png" data-selected-img="./static/images/kuromi_pick.png">
+        <img src="./static/images/kuromi.png" alt="Image 3">
+    </div>
+    <div class="image-container" data-sanrio-character="POMPOMPURIN" data-default-img="./static/images/pompom_purin.png" data-selected-img="./static/images/pompom_pick.png">
+        <img src="./static/images/pompom_purin.png" alt="Image 4">
+    </div>
+    <div class="image-container" data-sanrio-character="HELLO_KITTY" data-default-img="./static/images/hello_kitty.png" data-selected-img="./static/images/kitty_pick.png">
+        <img src="./static/images/hello_kitty.png" alt="Image 5">
+    </div>
+    <div class="image-container" data-sanrio-character="MY_MELODY" data-default-img="./static/images/my_melody.png" data-selected-img="./static/images/melody_pick.png">
+        <img src="./static/images/my_melody.png" alt="Image 6">
+    </div>
+    <div class="image-container" data-sanrio-character="KEROKEROKEROPPI" data-default-img="./static/images/keroppi.png" data-selected-img="./static/images/keroppi_pick.png">
+        <img src="./static/images/keroppi.png" alt="Image 7">
+    </div>
+    <div class="image-container" data-sanrio-character="HANGYODON" data-default-img="./static/images/han_gyo_don.png" data-selected-img="./static/images/gyo_don_pick.png">
+        <img src="./static/images/han_gyo_don.png" alt="Image 8">
+    </div>
+</div>
+<br><br>
+<!-- 검색 폼 -->
+<form id="searchForm" class="mb-3 d-flex justify-content-center">
+    <input type="text" id="keyword" name="keyword" placeholder="검색어" class="form-control mx-2" style="width: auto;">
+    <select id="searchType" name="searchType" class="form-control mx-2" style="width: auto;">
+        <option value="tag">태그</option>
+        <option value="itemName">상품명</option>
+    </select>
+    <button type="submit" class="btn btn-primary-search">검색</button>
+</form>
+<hr />
+<br><br>
+
+<div id="results" class="container">
+    <!-- 검색 결과가 여기에 표시됩니다 -->
+</div>
+
+<div id="pagination" class="text-center">
+    <!-- 페이지 네비게이션 버튼이 여기에 표시됩니다 -->
+</div>
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize all tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
     });
-  </script>
+</script>
+
+
+<script>
+  let currentPage = 1;
+  const limit = 20;
+  let loading = false;
+
+  async function loadItems() {
+    if (loading) return;
+    loading = true;
+
+    try {
+      const res = await fetch(`/items?page=${currentPage}&limit=${limit}`);
+      const data = await res.json();
+
+      data.items.forEach(item => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <h3>${item.name}</h3>
+          <p>${item.price}원</p>
+          <p>${item.description}</p>
+          <p>태그: ${item.tags.join(", ")}</p>
+        `;
+        document.getElementById("results").appendChild(div);
+      });
+
+      currentPage++;
+    } catch (err) {
+      console.error("불러오기 실패:", err);
+    } finally {
+      loading = false;
+    }
+  }
+
+  window.addEventListener("scroll", () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+      loadItems();
+    }
+  });
+
+  loadItems();
+</script>
+
 </body>
 </html>
