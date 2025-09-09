@@ -220,44 +220,135 @@
 
 
 <script>
-  let currentPage = 1;
-  const limit = 8;
-  let loading = false;
+    let currentPage = 1;
+let loading = false;
+let currentSearchType = '';
+let currentKeyword = '';
+let selectedSanrioCharacter = '';
+let currentTag = '';
 
-  async function loadItems() {
-    if (loading) return;
-    loading = true;
+function fetchItems(page = 1, searchType = '', keyword = '', sanrio = '') {
+    let accessToken = localStorage.getItem('accessToken')?.trim() || '';
 
-    try {
-      const res = await fetch(`/?page=${currentPage}&limit=${limit}`);
-      const data = await res.json();
+    let data = {
+        page: page - 1, // 0 기반
+        size: 8
+    };
 
-      data.items.forEach(item => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <h3>${item.name}</h3>
-          <p>${item.price}원</p>
-          <p>${item.description}</p>
-          <p>태그: ${item.tags.join(", ")}</p>
-        `;
-        document.getElementById("results").appendChild(div);
-      });
-
-      currentPage++;
-    } catch (err) {
-      console.error("불러오기 실패:", err);
-    } finally {
-      loading = false;
+    if (searchType) {
+        data.searchType = searchType === 'tag' ? 'TAG' : 'ITEM_NAME';
+        data.keyword = keyword;
     }
-  }
 
-  window.addEventListener("scroll", () => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
-      loadItems();
+    if (sanrio) {
+        data.sanrio = sanrio;
     }
-  });
 
-  loadItems();
+    if (currentTag) {
+        data.tag = currentTag;
+    }
+
+    $('#loading').show();
+
+    $.ajax({
+        url: '/api/items/list',
+        method: 'GET',
+        headers: { 'Authorization': accessToken },
+        data: data,
+        success: function(response) {
+            $('#loading').hide();
+            loading = false;
+
+            const resultsContainer = $('#results');
+            const items = response._embedded ? response._embedded.thumbnailItemDtoList : [];
+
+            if (items.length === 0 && page === 1) {
+                resultsContainer.append('<div class="error-wrapper"><img class="image-error" src="/images/out_of_stock_v2.png"></div>');
+                return;
+            }
+
+            let row = $('<div class="row"></div>');
+
+            items.forEach(function(item, index) {
+                const userDefinedTags = item.userDefinedTags || [];
+                const recommendedTags = item.recommendedTags || [];
+                const likeCountText = item.likeCount > 0 ? `${item.likeCount}명이 찜한 상품입니다` : '';
+                const isWished = item.likedByUser;
+                const buttonClass = isWished ? 'btn-danger' : 'btn-outline-dark';
+                const buttonText = isWished ? '찜 취소' : '찜하기';
+
+                const card = `
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <img class="card-img-top" src="${item.thumbnail}" alt="Item Image" data-id="${item.id}" />
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <h5 class="fw-bolder">${item.nameKor}</h5>
+                                    <div class="d-flex align-items-center justify-content-center mb-2">
+                                        <span>${likeCountText}</span>
+                                    </div>
+                                    ${item.price}원
+                                </div>
+                            </div>
+                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                <div class="text-center">
+                                    <a class="btn ${buttonClass} mt-auto btn-wish" data-id="${item.id}" data-wished="${isWished}" href="#">${buttonText}</a>
+                                </div>
+                                <div class="tag-container mt-3">
+                                    ${userDefinedTags.map(tag => `<span class="badge bg-hashtag" data-tag="${tag}">#${tag}</span>`).join('')}
+                                    ${recommendedTags.map(tag => `<span class="badge bg-hashtag" data-tag="${tag}">#${tag}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                row.append(card);
+                if ((index + 1) % 4 === 0) {
+                    resultsContainer.append(row);
+                    row = $('<div class="row"></div>');
+                }
+            });
+
+            if (row.children().length > 0) {
+                resultsContainer.append(row);
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#loading').hide();
+            loading = false;
+
+            if (xhr.status === 401) {
+                alert("로그인한 사용자만 조회할 수 있습니다!");
+                window.location.href = '/view/login';
+                return;
+            }
+
+            $('#results').append(`
+                <div class="error-wrapper">
+                    <img class="image-error" src="/images/error_v2.png" alt="Error Image">
+                </div>
+            `);
+        }
+    });
+}
+
+// 무한 스크롤
+$(window).scroll(function() {
+    if($(window).scrollTop() + $(window).height() >= $(document).height() - 200) {
+        if(!loading) {
+            loading = true;
+            currentPage++;
+            fetchItems(currentPage, currentSearchType, currentKeyword, selectedSanrioCharacter);
+        }
+    }
+});
+
+// 초기 로딩
+$(document).ready(function() {
+    fetchItems(currentPage, currentSearchType, currentKeyword, selectedSanrioCharacter);
+});
+
 </script>
 
 </body>
