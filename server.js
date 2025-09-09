@@ -21,11 +21,22 @@ app.get("/api/items/list", async (req, res) => {
     const offset = page * size;
 
     const query = `
-      SELECT i.item_id, i.name_kor, i.price, i.description, i.thumbnail,
-             COALESCE(json_agg(ht.tag_option) FILTER (WHERE ht.tag_option IS NOT NULL), '[]') AS tags
+      SELECT 
+        i.item_id,
+        i.name_kor,
+        i.price,
+        i.description,
+        ii.img_url AS thumbnail,   -- 대표 이미지
+        COALESCE(
+          json_agg(ht.tag_option) FILTER (WHERE ht.tag_option IS NOT NULL),
+          '[]'
+        ) AS tags
       FROM item i
-      LEFT JOIN hash_tag ht ON i.item_id = ht.item_id
-      GROUP BY i.item_id
+      LEFT JOIN item_img ii 
+        ON i.item_id = ii.item_id AND ii.is_main_img = 'Y'
+      LEFT JOIN hash_tag ht 
+        ON i.item_id = ht.item_id
+      GROUP BY i.item_id, ii.img_url
       ORDER BY i.item_id DESC
       LIMIT $1 OFFSET $2
     `;
@@ -38,6 +49,7 @@ app.get("/api/items/list", async (req, res) => {
     res.status(500).json({ error: "서버 오류" });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`서버 실행 중 http://localhost:${PORT}`);

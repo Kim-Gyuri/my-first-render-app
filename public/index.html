@@ -224,15 +224,16 @@ async function fetchItems() {
       const card = document.createElement('div');
       card.className = 'col-md-3 mb-4';
       card.innerHTML = `
-        <div class="card h-100">
-          <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
-          <div class="card-body text-center">
+    <div class="card h-100">
+        <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
+        <div class="card-body text-center">
             <h5>${item.name_kor}</h5>
             <p>${item.price}원</p>
             <div>${item.tags.map(tag => `<span>#${tag}</span>`).join('')}</div>
-          </div>
         </div>
-      `;
+    </div>
+    `;
+
       results.appendChild(card);
     });
 
