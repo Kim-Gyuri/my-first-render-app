@@ -207,147 +207,52 @@
 
 
 
-
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Initialize all tooltips
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    });
-</script>
-
-
-<script>
-    let currentPage = 1;
+let currentPage = 0;
 let loading = false;
-let currentSearchType = '';
-let currentKeyword = '';
-let selectedSanrioCharacter = '';
-let currentTag = '';
 
-function fetchItems(page = 1, searchType = '', keyword = '', sanrio = '') {
-    let accessToken = localStorage.getItem('accessToken')?.trim() || '';
+async function fetchItems() {
+  if (loading) return;
+  loading = true;
 
-    let data = {
-        page: page - 1, // 0 기반
-        size: 8
-    };
+  try {
+    const res = await fetch(`/api/items/list?page=${currentPage}&size=8`);
+    const data = await res.json();
 
-    if (searchType) {
-        data.searchType = searchType === 'tag' ? 'TAG' : 'ITEM_NAME';
-        data.keyword = keyword;
-    }
-
-    if (sanrio) {
-        data.sanrio = sanrio;
-    }
-
-    if (currentTag) {
-        data.tag = currentTag;
-    }
-
-    $('#loading').show();
-
-    $.ajax({
-        url: '/api/items/list',
-        method: 'GET',
-        headers: { 'Authorization': accessToken },
-        data: data,
-        success: function(response) {
-            $('#loading').hide();
-            loading = false;
-
-            const resultsContainer = $('#results');
-            const items = response._embedded ? response._embedded.thumbnailItemDtoList : [];
-
-            if (items.length === 0 && page === 1) {
-                resultsContainer.append('<div class="error-wrapper"><img class="image-error" src="/images/out_of_stock_v2.png"></div>');
-                return;
-            }
-
-            let row = $('<div class="row"></div>');
-
-            items.forEach(function(item, index) {
-                const userDefinedTags = item.userDefinedTags || [];
-                const recommendedTags = item.recommendedTags || [];
-                const likeCountText = item.likeCount > 0 ? `${item.likeCount}명이 찜한 상품입니다` : '';
-                const isWished = item.likedByUser;
-                const buttonClass = isWished ? 'btn-danger' : 'btn-outline-dark';
-                const buttonText = isWished ? '찜 취소' : '찜하기';
-
-                const card = `
-                    <div class="col-md-3 mb-4">
-                        <div class="card h-100">
-                            <img class="card-img-top" src="${item.thumbnail}" alt="Item Image" data-id="${item.id}" />
-                            <div class="card-body p-4">
-                                <div class="text-center">
-                                    <h5 class="fw-bolder">${item.nameKor}</h5>
-                                    <div class="d-flex align-items-center justify-content-center mb-2">
-                                        <span>${likeCountText}</span>
-                                    </div>
-                                    ${item.price}원
-                                </div>
-                            </div>
-                            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                                <div class="text-center">
-                                    <a class="btn ${buttonClass} mt-auto btn-wish" data-id="${item.id}" data-wished="${isWished}" href="#">${buttonText}</a>
-                                </div>
-                                <div class="tag-container mt-3">
-                                    ${userDefinedTags.map(tag => `<span class="badge bg-hashtag" data-tag="${tag}">#${tag}</span>`).join('')}
-                                    ${recommendedTags.map(tag => `<span class="badge bg-hashtag" data-tag="${tag}">#${tag}</span>`).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                row.append(card);
-                if ((index + 1) % 4 === 0) {
-                    resultsContainer.append(row);
-                    row = $('<div class="row"></div>');
-                }
-            });
-
-            if (row.children().length > 0) {
-                resultsContainer.append(row);
-            }
-        },
-        error: function(xhr, status, error) {
-            $('#loading').hide();
-            loading = false;
-
-            if (xhr.status === 401) {
-                alert("로그인한 사용자만 조회할 수 있습니다!");
-                window.location.href = '/view/login';
-                return;
-            }
-
-            $('#results').append(`
-                <div class="error-wrapper">
-                    <img class="image-error" src="/images/error_v2.png" alt="Error Image">
-                </div>
-            `);
-        }
+    const results = document.getElementById('results');
+    data.items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'col-md-3 mb-4';
+      card.innerHTML = `
+        <div class="card h-100">
+          <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
+          <div class="card-body text-center">
+            <h5>${item.name_kor}</h5>
+            <p>${item.price}원</p>
+            <div>${item.tags.map(tag => `<span>#${tag}</span>`).join('')}</div>
+          </div>
+        </div>
+      `;
+      results.appendChild(card);
     });
+
+    currentPage++;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    loading = false;
+  }
 }
 
 // 무한 스크롤
-$(window).scroll(function() {
-    if($(window).scrollTop() + $(window).height() >= $(document).height() - 200) {
-        if(!loading) {
-            loading = true;
-            currentPage++;
-            fetchItems(currentPage, currentSearchType, currentKeyword, selectedSanrioCharacter);
-        }
-    }
+window.addEventListener('scroll', () => {
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+    fetchItems();
+  }
 });
 
 // 초기 로딩
-$(document).ready(function() {
-    fetchItems(currentPage, currentSearchType, currentKeyword, selectedSanrioCharacter);
-});
+document.addEventListener('DOMContentLoaded', fetchItems);
 
 </script>
 
