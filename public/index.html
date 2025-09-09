@@ -221,7 +221,7 @@
 
 <script>
   let currentPage = 1;
-  const limit = 20;
+  const limit = 8;
   let loading = false;
 
   async function loadItems() {
@@ -229,7 +229,7 @@
     loading = true;
 
     try {
-      const res = await fetch(`/items?page=${currentPage}&limit=${limit}`);
+      const res = await fetch(`/?page=${currentPage}&limit=${limit}`);
       const data = await res.json();
 
       data.items.forEach(item => {
