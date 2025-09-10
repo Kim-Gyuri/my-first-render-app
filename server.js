@@ -54,7 +54,7 @@ app.get("/api/items/list", async (req, res) => {
     const params = [];
     // 캐릭터 필터 조건
     if (character) {
-      query += ` WHERE i.character = $1 `;
+      query += ` WHERE i.sanrio_characters = $3 `;
       params.push(character);
     }
 
