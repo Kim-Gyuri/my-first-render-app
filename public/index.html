@@ -196,10 +196,10 @@
 </form>
 <hr />
 <br><br>
-
 <div id="results"></div>
 <div class="text-center mt-4">
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
+  <p id="no-items-message" class="mt-3 text-muted" style="display:none;">등록된 상품이 없습니다.</p>
   <p id="end-message" class="mt-3 text-muted" style="display:none;">마지막 상품입니다</p>
 </div>
 
@@ -219,10 +219,10 @@ async function fetchItems() {
     const results = document.getElementById('results');
     let row = results.lastElementChild;
 
-    // 상품이 전혀 없는 경우 (첫 페이지에서 items.length === 0)
+    // 첫 페이지인데 상품이 없는 경우
     if (currentPage === 0 && items.length === 0) {
       document.getElementById('no-items-message').style.display = 'block';
-      document.getElementById('load-more').style.display = 'none';
+      document.getElementById('load-more-btn').style.display = 'none';
       return;
     }
 
@@ -233,7 +233,8 @@ async function fetchItems() {
       results.appendChild(row);
     }
 
-    data.items.forEach((item) => {
+    // 상품 카드 추가
+    items.forEach((item) => {
       const card = document.createElement('div');
       card.className = 'col-md-3 mb-4';
       card.innerHTML = `
@@ -242,11 +243,9 @@ async function fetchItems() {
           <div class="card-body text-center">
             <h5>${item.name_kor}</h5>
             <p>${item.price}원</p>
-            <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                <div class="tag-container mt-3">
-                    ${item.tags.map(tag => `<span class="badge bg-hashtag">#${tag}</span>`).join(' ')}</div>   
-                </div>
-            </div>      
+            <div class="tag-container mt-3">
+              ${item.tags.map(tag => `<span class="badge bg-hashtag">#${tag}</span>`).join(' ')}
+            </div>
           </div>
         </div>
       `;
@@ -262,9 +261,9 @@ async function fetchItems() {
 
     currentPage++;
 
-    // 다음 페이지가 없을 때 처리
+    // 다음 페이지가 없는 경우
     if (items.length === 0) {
-      document.getElementById('load-more').style.display = 'none';
+      document.getElementById('load-more-btn').style.display = 'none';
       document.getElementById('end-message').style.display = 'block';
     }
 
@@ -275,8 +274,8 @@ async function fetchItems() {
   }
 }
 
-// "더보기" 버튼 클릭 시 다음 페이지 로딩
-document.getElementById('load-more').addEventListener('click', fetchItems);
+// "더보기" 버튼 클릭 시
+document.getElementById('load-more-btn').addEventListener('click', fetchItems);
 
 // 초기 로딩
 document.addEventListener('DOMContentLoaded', fetchItems);
