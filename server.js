@@ -13,23 +13,33 @@ const pool = new Pool({
 // 정적 파일 서빙
 app.use(express.static('public'));
 
-// 아이템 목록 API
-// 아이템 목록 API
+
+// 서버.js - 아이템 목록 API
 app.get("/api/items/list", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 0; 
+    const page = parseInt(req.query.page) || 0;
     const size = parseInt(req.query.size) || 8;
     const offset = page * size;
+    const character = req.query.character || null;
 
-    const character = req.query.character || null; // 캐릭터 필터 조건
+    // ENUM 유효성 체크
+    const validCharacters = [
+      'CINNAMOROLL','HANGYODON','HELLO_KITTY','KEROKEROKEROPPI',
+      'KUROMI','MY_MELODY','POCHACCO','POMPOMPURIN','SHOW_BY_ROCK'
+    ];
 
+    if (character && !validCharacters.includes(character)) {
+      return res.status(400).json({ error: "잘못된 캐릭터 값입니다." });
+    }
+
+    // 기본 쿼리
     let query = `
       SELECT 
         i.item_id,
         i.name_kor,
         i.price,
         i.description,
-        ii.img_url AS thumbnail,   -- 대표 이미지
+        ii.img_url AS thumbnail,
         COALESCE(
           json_agg(ht.tag_option) FILTER (WHERE ht.tag_option IS NOT NULL),
           '[]'
@@ -41,19 +51,20 @@ app.get("/api/items/list", async (req, res) => {
         ON i.item_id = ht.item_id
     `;
 
-    // 캐릭터 조건 있으면 WHERE 추가
+    const params = [];
+    // 캐릭터 필터 조건
     if (character) {
-      query += ` WHERE i.character = $3 `;
+      query += ` WHERE i.character = $1 `;
+      params.push(character);
     }
 
     query += `
       GROUP BY i.item_id, ii.img_url
       ORDER BY i.item_id DESC
-      LIMIT $1 OFFSET $2
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
 
-    const params = [size, offset];
-    if (character) params.push(character);
+    params.push(size, offset);
 
     const { rows } = await pool.query(query, params);
 
@@ -63,6 +74,7 @@ app.get("/api/items/list", async (req, res) => {
     res.status(500).json({ error: "서버 오류" });
   }
 });
+
 
 
 app.listen(PORT, () => {

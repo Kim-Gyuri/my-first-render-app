@@ -204,29 +204,41 @@
 <script>
 let currentPage = 0;
 let loading = false;
-let selectedCharacter = null; // 선택된 캐릭터 저장 변수
+let selectedCharacter = null; // 선택한 캐릭터
 
-// 상품 불러오기
-async function fetchItems(reset = false) {
+// 산리오 캐릭터 클릭 이벤트
+document.querySelectorAll('.image-container').forEach(container => {
+  container.addEventListener('click', () => {
+    // 선택/해제 토글
+    if (container.classList.contains('selected')) {
+      container.classList.remove('selected');
+      selectedCharacter = null;
+    } else {
+      document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected'));
+      container.classList.add('selected');
+      selectedCharacter = container.dataset.sanrioCharacter;
+    }
+
+    // 새로 검색
+    currentPage = 0;
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('load-more-btn').style.display = 'inline-block';
+    fetchItems();
+  });
+});
+
+async function fetchItems() {
   if (loading) return;
   loading = true;
 
-  if (reset) {
-    currentPage = 0;
-    document.getElementById("results").innerHTML = "";
-    document.getElementById("load-more-btn").style.display = "block";
-  }
-
   try {
     let url = `/api/items/list?page=${currentPage}&size=8`;
-    if (selectedCharacter) {
-      url += `&character=${selectedCharacter}`;
-    }
+    if (selectedCharacter) url += `&character=${selectedCharacter}`;
 
     const res = await fetch(url);
     const data = await res.json();
+    const items = data.items || [];
 
-    const items = data.items || [];  // 서버 응답 구조 확인 필요
     const results = document.getElementById('results');
     let row = results.lastElementChild;
 
@@ -242,7 +254,7 @@ async function fetchItems(reset = false) {
       results.appendChild(row);
     }
 
-    items.forEach((item) => {
+    items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'col-md-3 mb-4';
       card.innerHTML = `
@@ -267,12 +279,9 @@ async function fetchItems(reset = false) {
     });
 
     currentPage++;
-
     if (items.length === 0) {
-      alert("마지막 상품입니다.");
       document.getElementById('load-more-btn').style.display = 'none';
     }
-
   } catch (err) {
     console.error(err);
   } finally {
@@ -280,32 +289,10 @@ async function fetchItems(reset = false) {
   }
 }
 
-// 캐릭터 이미지 클릭 이벤트
-document.querySelectorAll('.image-container').forEach(container => {
-  container.addEventListener('click', function() {
-    // 이전 선택된 캐릭터 이미지 복원
-    document.querySelectorAll('.image-container').forEach(c => {
-      const img = c.querySelector('img');
-      img.src = c.dataset.defaultImg;
-    });
+document.getElementById('load-more-btn').addEventListener('click', fetchItems);
+document.addEventListener('DOMContentLoaded', fetchItems);
 
-    // 현재 선택된 이미지로 변경
-    const img = this.querySelector('img');
-    img.src = this.dataset.selectedImg;
 
-    // 선택된 캐릭터 저장
-    selectedCharacter = this.dataset.sanrioCharacter;
-
-    // 선택된 캐릭터 기준으로 검색 (초기화 후 재조회)
-    fetchItems(true);
-  });
-});
-
-// 더보기 버튼
-document.getElementById('load-more-btn').addEventListener('click', () => fetchItems());
-
-// 초기 로딩
-document.addEventListener('DOMContentLoaded', () => fetchItems());
 </script>
 
 
