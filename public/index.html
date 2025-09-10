@@ -271,12 +271,27 @@ document.addEventListener('click', (e) => {
 // 검색폼 제출 이벤트
 document.getElementById('searchForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    selectedTag = document.getElementById('keyword').value.trim();
+    const keyword = document.getElementById('keyword').value.trim();
+    const searchType = document.getElementById('searchType').value;
+
+    // 검색어가 없으면 전체 조회
+    if (!keyword) {
+        selectedTag = null;
+        selectedKeyword = null;
+    } else if (searchType === 'itemName') {
+        selectedKeyword = keyword;
+        selectedTag = null;
+    } else {
+        selectedTag = keyword;
+        selectedKeyword = null;
+    }
+
     currentPage = 0;
     document.getElementById('results').innerHTML = '';
     document.getElementById('load-more-btn').style.display = 'inline-block';
     fetchItems();
 });
+
 
 async function fetchItems() {
   if (loading) return;
