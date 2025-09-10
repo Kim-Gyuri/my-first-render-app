@@ -20,19 +20,9 @@ app.get("/api/items/list", async (req, res) => {
     const page = parseInt(req.query.page) || 0;
     const size = parseInt(req.query.size) || 8;
     const offset = page * size;
-    const character = req.query.character || null;
+    const character = req.query.character || null; // 선택된 산리오 캐릭터
 
-    // ENUM 유효성 체크
-    const validCharacters = [
-      'CINNAMOROLL','HANGYODON','HELLO_KITTY','KEROKEROKEROPPI',
-      'KUROMI','MY_MELODY','POCHACCO','POMPOMPURIN','SHOW_BY_ROCK'
-    ];
-
-    if (character && !validCharacters.includes(character)) {
-      return res.status(400).json({ error: "잘못된 캐릭터 값입니다." });
-    }
-
-    // 기본 쿼리
+    const params = [];
     let query = `
       SELECT 
         i.item_id,
@@ -51,13 +41,13 @@ app.get("/api/items/list", async (req, res) => {
         ON i.item_id = ht.item_id
     `;
 
-    const params = [];
-    // 캐릭터 필터 조건
+    // 캐릭터 필터 조건 추가
     if (character) {
-      query += ` WHERE i.sanrio_characters = $3 `;
+      query += ` WHERE i.sanrio_characters = $1 `;
       params.push(character);
     }
 
+    // GROUP BY, ORDER BY, LIMIT/OFFSET 추가
     query += `
       GROUP BY i.item_id, ii.img_url
       ORDER BY i.item_id DESC
@@ -74,6 +64,7 @@ app.get("/api/items/list", async (req, res) => {
     res.status(500).json({ error: "서버 오류" });
   }
 });
+
 
 
 
