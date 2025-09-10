@@ -14,13 +14,16 @@ const pool = new Pool({
 app.use(express.static('public'));
 
 // 아이템 목록 API
+// 아이템 목록 API
 app.get("/api/items/list", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 0; 
     const size = parseInt(req.query.size) || 8;
     const offset = page * size;
 
-    const query = `
+    const character = req.query.character || null; // 캐릭터 필터 조건
+
+    let query = `
       SELECT 
         i.item_id,
         i.name_kor,
@@ -36,12 +39,23 @@ app.get("/api/items/list", async (req, res) => {
         ON i.item_id = ii.item_id AND ii.is_main_img = 'Y'
       LEFT JOIN hash_tag ht 
         ON i.item_id = ht.item_id
+    `;
+
+    // 캐릭터 조건 있으면 WHERE 추가
+    if (character) {
+      query += ` WHERE i.character = $3 `;
+    }
+
+    query += `
       GROUP BY i.item_id, ii.img_url
       ORDER BY i.item_id DESC
       LIMIT $1 OFFSET $2
     `;
 
-    const { rows } = await pool.query(query, [size, offset]);
+    const params = [size, offset];
+    if (character) params.push(character);
+
+    const { rows } = await pool.query(query, params);
 
     res.json({ items: rows });
   } catch (err) {
