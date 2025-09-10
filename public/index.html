@@ -199,8 +199,6 @@
 <div id="results"></div>
 <div class="text-center mt-4">
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
-  <p id="no-items-message" class="mt-3 text-muted" style="display:none;">등록된 상품이 없습니다.</p>
-  <p id="end-message" class="mt-3 text-muted" style="display:none;">마지막 상품입니다</p>
 </div>
 
 <script>
@@ -221,9 +219,9 @@ async function fetchItems() {
 
     // 첫 페이지인데 상품이 없는 경우
     if (currentPage === 0 && items.length === 0) {
-      document.getElementById('no-items-message').style.display = 'block';
-      document.getElementById('load-more-btn').style.display = 'none';
-      return;
+        alert("등록된 상품이 없습니다.");
+        document.getElementById('load-more-btn').style.display = 'none';
+        return;
     }
 
     // 마지막 요소가 row가 아니면 새로 row 생성
@@ -263,8 +261,8 @@ async function fetchItems() {
 
     // 다음 페이지가 없는 경우
     if (items.length === 0) {
-      document.getElementById('load-more-btn').style.display = 'none';
-      document.getElementById('end-message').style.display = 'block';
+        alert("마지막 상품입니다.");
+        document.getElementById('load-more-btn').style.display = 'none';
     }
 
   } catch (err) {
