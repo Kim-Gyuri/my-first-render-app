@@ -286,9 +286,12 @@ async function fetchItems() {
     });
 
     currentPage++;
-    if (items.length === 0) {
-      document.getElementById('load-more-btn').style.display = 'none';
+    // 다음 페이지가 없는 경우 
+    if (items.length === 0) { 
+        alert("마지막 상품입니다."); 
+        document.getElementById('load-more-btn').style.display = 'none'; 
     }
+    
   } catch (err) {
     console.error(err);
   } finally {
