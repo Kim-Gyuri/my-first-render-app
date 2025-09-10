@@ -237,6 +237,10 @@ document.querySelectorAll('.image-container').forEach(container => {
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('badge')) {
         selectedTag = e.target.textContent.replace('#', '');
+
+        //검색창에도 입력되도록 설정
+        document.getElementById('keyword').value = selectedTag;
+        
         currentPage = 0;
         document.getElementById('results').innerHTML = '';
         document.getElementById('load-more-btn').style.display = 'inline-block';
