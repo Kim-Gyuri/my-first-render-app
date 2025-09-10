@@ -205,6 +205,7 @@
 let currentPage = 0;
 let loading = false;
 let selectedCharacter = null; // 선택한 캐릭터
+let selectedTag = null;
 
 // 산리오 캐릭터 클릭 이벤트
 document.querySelectorAll('.image-container').forEach(container => {
@@ -232,6 +233,28 @@ document.querySelectorAll('.image-container').forEach(container => {
     document.getElementById('load-more-btn').style.display = 'inline-block';
     fetchItems();
   });
+});
+
+//카드뷰 태그 클릭 이벤트
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('badge')) {
+        selectedTag = e.target.textContent.replace('#', '');
+        currentPage = 0;
+        document.getElementById('results').innerHTML = '';
+        document.getElementById('load-more-btn').style.display = 'inline-block';
+        fetchItems();
+    }
+});
+
+
+// 검색폼 제출 이벤트
+document.getElementById('searchForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    selectedTag = document.getElementById('keyword').value.trim();
+    currentPage = 0;
+    document.getAnimations('results').innerHTML = '';
+    document.getElementById('load-more-btn').style.display = 'inline-block';
+    fetchItems();
 });
 
 async function fetchItems() {
@@ -291,7 +314,7 @@ async function fetchItems() {
         alert("마지막 상품입니다."); 
         document.getElementById('load-more-btn').style.display = 'none'; 
     }
-    
+
   } catch (err) {
     console.error(err);
   } finally {

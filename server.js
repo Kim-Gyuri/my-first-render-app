@@ -13,16 +13,19 @@ const pool = new Pool({
 // 정적 파일 서빙
 app.use(express.static('public'));
 
-
-// 서버.js - 아이템 목록 API
+// 검색 api 요청
 app.get("/api/items/list", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 0;
     const size = parseInt(req.query.size) || 8;
     const offset = page * size;
+
     const character = req.query.character || null; // 선택된 산리오 캐릭터
+    const tag = req.query.tag || null; // 선택된 태그
 
     const params = [];
+    let whereClauses = []; // WHERE 조건을 담을 배열
+
     let query = `
       SELECT 
         i.item_id,
@@ -41,24 +44,38 @@ app.get("/api/items/list", async (req, res) => {
         ON i.item_id = ht.item_id
     `;
 
-    // 캐릭터 필터 조건 추가
+    // 캐릭터 필터
     if (character) {
-      query += ` WHERE i.sanrio_characters = $1 `;
       params.push(character);
+      whereClauses.push(`i.sanrio_characters = $${params.length}`);
     }
 
-    // GROUP BY, ORDER BY, LIMIT/OFFSET 추가
+    // 태그 필터
+    if (tag) {
+      params.push(tag);
+      whereClauses.push(`EXISTS (
+        SELECT 1 
+        FROM hash_tag h 
+        WHERE h.item_id = i.item_id AND h.tag_option = $${params.length}
+      )`);
+    }
+
+    // WHERE 절 결합
+    if (whereClauses.length > 0) {
+      query += ` WHERE ${whereClauses.join(' AND ')}`;
+    }
+
+    // GROUP BY, ORDER BY, LIMIT/OFFSET
+    params.push(size, offset);
     query += `
       GROUP BY i.item_id, ii.img_url
       ORDER BY i.item_id DESC
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      LIMIT $${params.length - 1} OFFSET $${params.length}
     `;
 
-    params.push(size, offset);
-
     const { rows } = await pool.query(query, params);
-
     res.json({ items: rows });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "서버 오류" });
