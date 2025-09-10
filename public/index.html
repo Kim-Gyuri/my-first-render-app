@@ -300,6 +300,8 @@ async function fetchItems() {
   try {
     let url = `/api/items/list?page=${currentPage}&size=${pageSize}`;
     if (selectedCharacter) url += `&character=${selectedCharacter}`;
+
+    //검색폼에 입력이 있을 때
     if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
     if (selectedKeyword) url += `&keyword=${encodeURIComponent(selectedKeyword)}`;
 
@@ -360,6 +362,14 @@ async function fetchItems() {
     loading = false;
   }
 }
+
+
+// 초기 로딩
+document.addEventListener('DOMContentLoaded', () => {
+  selectedTag = null;
+  selectedKeyword = null;
+  fetchItems();
+});
 
 // "더보기" 버튼 클릭
 document.getElementById('load-more-btn').addEventListener('click', fetchItems);
