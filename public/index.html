@@ -201,33 +201,31 @@
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
 </div>
 
+
 <script>
 let currentPage = 0;
 let loading = false;
 let selectedCharacter = null; // 선택한 캐릭터
 let selectedTag = null;
+const pageSize = 8; // 한 페이지당 아이템 수
 
 // 산리오 캐릭터 클릭 이벤트
 document.querySelectorAll('.image-container').forEach(container => {
   container.addEventListener('click', () => {
     if (container.classList.contains('selected')) {
-      // 선택 해제
       container.classList.remove('selected');
       container.querySelector('img').src = container.dataset.defaultImg;
       selectedCharacter = null;
     } else {
-      // 다른 캐릭터 선택 해제
       document.querySelectorAll('.image-container').forEach(c => {
         c.classList.remove('selected');
         c.querySelector('img').src = c.dataset.defaultImg;
       });
-      // 클릭한 캐릭터 선택
       container.classList.add('selected');
       container.querySelector('img').src = container.dataset.selectedImg;
       selectedCharacter = container.dataset.sanrioCharacter;
     }
 
-    // 검색 초기화
     currentPage = 0;
     document.getElementById('results').innerHTML = '';
     document.getElementById('load-more-btn').style.display = 'inline-block';
@@ -235,7 +233,7 @@ document.querySelectorAll('.image-container').forEach(container => {
   });
 });
 
-//카드뷰 태그 클릭 이벤트
+// 카드뷰 태그 클릭 이벤트
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('badge')) {
         selectedTag = e.target.textContent.replace('#', '');
@@ -246,13 +244,12 @@ document.addEventListener('click', (e) => {
     }
 });
 
-
 // 검색폼 제출 이벤트
 document.getElementById('searchForm').addEventListener('submit', (e) => {
     e.preventDefault();
     selectedTag = document.getElementById('keyword').value.trim();
     currentPage = 0;
-    document.getAnimations('results').innerHTML = '';
+    document.getElementById('results').innerHTML = '';
     document.getElementById('load-more-btn').style.display = 'inline-block';
     fetchItems();
 });
@@ -262,29 +259,30 @@ async function fetchItems() {
   loading = true;
 
   try {
-    let url = `/api/items/list?page=${currentPage}&size=8`;
+    let url = `/api/items/list?page=${currentPage}&size=${pageSize}`;
     if (selectedCharacter) url += `&character=${selectedCharacter}`;
+    if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
 
     const res = await fetch(url);
     const data = await res.json();
     const items = data.items || [];
 
     const results = document.getElementById('results');
-    let row = results.lastElementChild;
 
     if (currentPage === 0 && items.length === 0) {
-      alert("등록된 상품이 없습니다.");
+      results.innerHTML = '<p class="text-center">등록된 상품이 없습니다.</p>';
       document.getElementById('load-more-btn').style.display = 'none';
       return;
     }
 
+    let row = results.lastElementChild;
     if (!row || !row.classList.contains('row')) {
       row = document.createElement('div');
       row.className = 'row';
       results.appendChild(row);
     }
 
-    items.forEach(item => {
+    items.forEach((item, index) => {
       const card = document.createElement('div');
       card.className = 'col-md-3 mb-4';
       card.innerHTML = `
@@ -301,7 +299,8 @@ async function fetchItems() {
       `;
       row.appendChild(card);
 
-      if (row.children.length === 4) {
+      // 4개 단위로 새 row 생성
+      if ((row.children.length % 4 === 0) && (index !== items.length - 1)) {
         row = document.createElement('div');
         row.className = 'row';
         results.appendChild(row);
@@ -309,10 +308,10 @@ async function fetchItems() {
     });
 
     currentPage++;
-    // 다음 페이지가 없는 경우 
+
+    // 마지막 페이지일 경우 더보기 버튼 숨김
     if (items.length === 0) { 
-        alert("마지막 상품입니다."); 
-        document.getElementById('load-more-btn').style.display = 'none'; 
+        alert("마지막 상품입니다."); document.getElementById('load-more-btn').style.display = 'none'; 
     }
 
   } catch (err) {
@@ -328,7 +327,6 @@ document.getElementById('load-more-btn').addEventListener('click', fetchItems);
 // 초기 로딩
 document.addEventListener('DOMContentLoaded', fetchItems);
 </script>
-
 
 
 </body>

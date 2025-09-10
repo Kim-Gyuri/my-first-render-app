@@ -20,8 +20,8 @@ app.get("/api/items/list", async (req, res) => {
     const size = parseInt(req.query.size) || 8;
     const offset = page * size;
 
-    const character = req.query.character || null; // 선택된 산리오 캐릭터
-    const tag = req.query.tag || null; // 선택된 태그
+    const selectedCharacter = req.query.character || null; // 선택된 산리오 캐릭터
+    const selectedTag = req.query.tag || null; // 선택된 태그
 
     const params = [];
     let whereClauses = []; // WHERE 조건을 담을 배열
@@ -45,14 +45,14 @@ app.get("/api/items/list", async (req, res) => {
     `;
 
     // 캐릭터 필터
-    if (character) {
-      params.push(character);
+    if (selectedCharacter) {
+      params.push(selectedCharacter);
       whereClauses.push(`i.sanrio_characters = $${params.length}`);
     }
 
     // 태그 필터
-    if (tag) {
-      params.push(tag);
+    if (selectedTag) {
+      params.push(selectedTag);
       whereClauses.push(`EXISTS (
         SELECT 1 
         FROM hash_tag h 
