@@ -197,15 +197,10 @@
 <hr />
 <br><br>
 
-<div id="results" class="container">
-    <!-- 검색 결과가 여기에 표시됩니다 -->
+<div id="results"></div>
+<div class="text-center mt-4">
+  <button id="load-more" class="btn btn-primary">더보기</button>
 </div>
-
-<div id="pagination" class="text-center">
-    <!-- 페이지 네비게이션 버튼이 여기에 표시됩니다 -->
-</div>
-
-
 
 <script>
 let currentPage = 0;
@@ -220,24 +215,46 @@ async function fetchItems() {
     const data = await res.json();
 
     const results = document.getElementById('results');
-    data.items.forEach(item => {
+    let row = results.lastElementChild;
+    
+    // 마지막 요소가 row가 아니면 새로 row 생성
+    if (!row || !row.classList.contains('row')) {
+      row = document.createElement('div');
+      row.className = 'row';
+      results.appendChild(row);
+    }
+
+    data.items.forEach((item, index) => {
       const card = document.createElement('div');
       card.className = 'col-md-3 mb-4';
       card.innerHTML = `
-    <div class="card h-100">
-        <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
-        <div class="card-body text-center">
+        <div class="card h-100">
+          <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
+          <div class="card-body text-center">
             <h5>${item.name_kor}</h5>
             <p>${item.price}원</p>
-            <div>${item.tags.map(tag => `<span>#${tag}</span>`).join('')}</div>
+            <div>${item.tags.map(tag => `<span>#${tag}</span>`).join(' ')}</div>
+          </div>
         </div>
-    </div>
-    `;
+      `;
 
-      results.appendChild(card);
+      row.appendChild(card);
+
+      // row에 카드가 4개 찼으면 새로운 row 생성
+      if (row.children.length === 4) {
+        row = document.createElement('div');
+        row.className = 'row';
+        results.appendChild(row);
+      }
     });
 
     currentPage++;
+
+    // 마지막 페이지면 버튼 숨기기
+    if (data.last) {
+      document.getElementById('load-more').style.display = 'none';
+    }
+
   } catch (err) {
     console.error(err);
   } finally {
@@ -245,17 +262,13 @@ async function fetchItems() {
   }
 }
 
-// 무한 스크롤
-window.addEventListener('scroll', () => {
-  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
-    fetchItems();
-  }
-});
+// "더보기" 버튼 클릭 시 다음 페이지 로딩
+document.getElementById('load-more').addEventListener('click', fetchItems);
 
 // 초기 로딩
 document.addEventListener('DOMContentLoaded', fetchItems);
-
 </script>
+
 
 </body>
 </html>
