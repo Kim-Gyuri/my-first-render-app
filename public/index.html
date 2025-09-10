@@ -233,6 +233,26 @@ document.querySelectorAll('.image-container').forEach(container => {
   });
 });
 
+//검색폼 - 상품명 입력
+document.getElementById('searchForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const keyword = document.getElementById('keyword').value.trim();
+    const searchType = document.getElementById('searchType').value;
+
+    //상품명/태그 선택
+    if (searchType == 'itemName') {
+        selectedTag = null;
+    } else {
+        selectedTag = keyword;
+        selectedKeyword = null;
+    }
+
+    currentPage = 0;
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('load-more-btn').style.display = 'inline-block';
+    fetchItems();
+});
+
 // 카드뷰 태그 클릭 이벤트
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('badge')) {
@@ -240,7 +260,7 @@ document.addEventListener('click', (e) => {
 
         //검색창에도 입력되도록 설정
         document.getElementById('keyword').value = selectedTag;
-        
+
         currentPage = 0;
         document.getElementById('results').innerHTML = '';
         document.getElementById('load-more-btn').style.display = 'inline-block';
@@ -266,6 +286,7 @@ async function fetchItems() {
     let url = `/api/items/list?page=${currentPage}&size=${pageSize}`;
     if (selectedCharacter) url += `&character=${selectedCharacter}`;
     if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
+    if (selectedKeyword) url += `&keyword=${encodeURIComponent(selectedKeyword)}`;
 
     const res = await fetch(url);
     const data = await res.json();

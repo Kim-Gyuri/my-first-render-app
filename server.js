@@ -13,7 +13,7 @@ const pool = new Pool({
 // 정적 파일 서빙
 app.use(express.static('public'));
 
-// 검색 api 요청
+// 검색 api 요청 
 app.get("/api/items/list", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 0;
@@ -22,6 +22,7 @@ app.get("/api/items/list", async (req, res) => {
 
     const selectedCharacter = req.query.character || null; // 선택된 산리오 캐릭터
     const selectedTag = req.query.tag || null; // 선택된 태그
+    const keyword = req.query.keyword || null; // 상품명 검색 키워드
 
     const params = [];
     let whereClauses = []; // WHERE 조건을 담을 배열
@@ -60,6 +61,12 @@ app.get("/api/items/list", async (req, res) => {
       )`);
     }
 
+    // 상품명 키워드 검색 (부분 일치)
+    if (keyword) {
+      params.push(`%${keyword}%`);
+      whereClauses.push(`i.name_kor LIKE $${params.length}`);
+    }
+
     // WHERE 절 결합
     if (whereClauses.length > 0) {
       query += ` WHERE ${whereClauses.join(' AND ')}`;
@@ -81,6 +88,7 @@ app.get("/api/items/list", async (req, res) => {
     res.status(500).json({ error: "서버 오류" });
   }
 });
+
 
 
 
