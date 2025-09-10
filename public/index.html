@@ -209,17 +209,24 @@ let selectedCharacter = null; // 선택한 캐릭터
 // 산리오 캐릭터 클릭 이벤트
 document.querySelectorAll('.image-container').forEach(container => {
   container.addEventListener('click', () => {
-    // 선택/해제 토글
     if (container.classList.contains('selected')) {
+      // 선택 해제
       container.classList.remove('selected');
+      container.querySelector('img').src = container.dataset.defaultImg;
       selectedCharacter = null;
     } else {
-      document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected'));
+      // 다른 캐릭터 선택 해제
+      document.querySelectorAll('.image-container').forEach(c => {
+        c.classList.remove('selected');
+        c.querySelector('img').src = c.dataset.defaultImg;
+      });
+      // 클릭한 캐릭터 선택
       container.classList.add('selected');
+      container.querySelector('img').src = container.dataset.selectedImg;
       selectedCharacter = container.dataset.sanrioCharacter;
     }
 
-    // 새로 검색
+    // 검색 초기화
     currentPage = 0;
     document.getElementById('results').innerHTML = '';
     document.getElementById('load-more-btn').style.display = 'inline-block';
@@ -289,10 +296,11 @@ async function fetchItems() {
   }
 }
 
+// "더보기" 버튼 클릭
 document.getElementById('load-more-btn').addEventListener('click', fetchItems);
+
+// 초기 로딩
 document.addEventListener('DOMContentLoaded', fetchItems);
-
-
 </script>
 
 
