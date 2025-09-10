@@ -201,15 +201,15 @@
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
 </div>
 
-
 <script>
 let currentPage = 0;
 let loading = false;
 let selectedCharacter = null; // 선택한 캐릭터
-let selectedTag = null;
-const pageSize = 8; // 한 페이지당 아이템 수
+let selectedTag = null;       // 선택한 태그
+let selectedKeyword = null;   // 상품명 검색어
+const pageSize = 8;
 
-// 산리오 캐릭터 클릭 이벤트
+// --- 산리오 캐릭터 클릭 이벤트 ---
 document.querySelectorAll('.image-container').forEach(container => {
   container.addEventListener('click', () => {
     if (container.classList.contains('selected')) {
@@ -226,73 +226,45 @@ document.querySelectorAll('.image-container').forEach(container => {
       selectedCharacter = container.dataset.sanrioCharacter;
     }
 
-    currentPage = 0;
-    document.getElementById('results').innerHTML = '';
-    document.getElementById('load-more-btn').style.display = 'inline-block';
-    fetchItems();
+    resetAndFetch();
   });
 });
 
-//검색폼 - 상품명 입력
+// --- 검색폼 제출 이벤트 ---
 document.getElementById('searchForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const keyword = document.getElementById('keyword').value.trim();
-    const searchType = document.getElementById('searchType').value;
+  e.preventDefault();
+  const keyword = document.getElementById('keyword').value.trim();
+  const searchType = document.getElementById('searchType').value;
 
-    //상품명/태그 선택
-    if (searchType == 'itemName') {
-        selectedTag = null;
-    } else {
-        selectedTag = keyword;
-        selectedKeyword = null;
-    }
+  if (!keyword) {
+    selectedTag = null;
+    selectedKeyword = null;
+  } else if (searchType === 'itemName') {
+    selectedKeyword = keyword;
+    selectedTag = null;
+  } else {
+    selectedTag = keyword;
+    selectedKeyword = null;
+  }
 
-    currentPage = 0;
-    document.getElementById('results').innerHTML = '';
-    document.getElementById('load-more-btn').style.display = 'inline-block';
-    fetchItems();
+  resetAndFetch();
 });
 
-// 카드뷰 태그 클릭 이벤트
+// --- 카드뷰 태그 클릭 이벤트 ---
 document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('badge')) {
-        selectedTag = e.target.textContent.replace('#', '');
+  if (e.target.classList.contains('badge')) {
+    selectedTag = e.target.textContent.replace('#', '');
+    selectedKeyword = null;
 
-        //검색창에도 입력되도록 설정
-        document.getElementById('keyword').value = selectedTag;
+    // 검색창에도 입력
+    document.getElementById('keyword').value = selectedTag;
+    document.getElementById('searchType').value = 'tag';
 
-        currentPage = 0;
-        document.getElementById('results').innerHTML = '';
-        document.getElementById('load-more-btn').style.display = 'inline-block';
-        fetchItems();
-    }
+    resetAndFetch();
+  }
 });
 
-// 검색폼 제출 이벤트
-document.getElementById('searchForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const keyword = document.getElementById('keyword').value.trim();
-    const searchType = document.getElementById('searchType').value;
-
-    // 검색어가 없으면 전체 조회
-    if (!keyword) {
-        selectedTag = null;
-        selectedKeyword = null;
-    } else if (searchType === 'itemName') {
-        selectedKeyword = keyword;
-        selectedTag = null;
-    } else {
-        selectedTag = keyword;
-        selectedKeyword = null;
-    }
-
-    currentPage = 0;
-    document.getElementById('results').innerHTML = '';
-    document.getElementById('load-more-btn').style.display = 'inline-block';
-    fetchItems();
-});
-
-
+// --- fetchItems 함수 ---
 async function fetchItems() {
   if (loading) return;
   loading = true;
@@ -300,8 +272,6 @@ async function fetchItems() {
   try {
     let url = `/api/items/list?page=${currentPage}&size=${pageSize}`;
     if (selectedCharacter) url += `&character=${selectedCharacter}`;
-
-    //검색폼에 입력이 있을 때
     if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
     if (selectedKeyword) url += `&keyword=${encodeURIComponent(selectedKeyword)}`;
 
@@ -350,32 +320,38 @@ async function fetchItems() {
     });
 
     currentPage++;
-
-    // 마지막 페이지일 경우 더보기 버튼 숨김
-    if (items.length === 0) { 
-        alert("마지막 상품입니다."); document.getElementById('load-more-btn').style.display = 'none'; 
-    }
+    document.getElementById('load-more-btn').style.display = (items.length < pageSize) ? 'none' : 'inline-block';
 
   } catch (err) {
     console.error(err);
   } finally {
     loading = false;
   }
+
+  if (items.length === 0) { 
+        alert("마지막 상품입니다."); 
+        document.getElementById('load-more-btn').style.display = 'none'; 
+    }
 }
 
+// --- 페이지 초기화 후 fetch ---
+function resetAndFetch() {
+  currentPage = 0;
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('load-more-btn').style.display = 'inline-block';
+  fetchItems();
+}
 
-// 초기 로딩
+// --- "더보기" 버튼 클릭 ---
+document.getElementById('load-more-btn').addEventListener('click', fetchItems);
+
+// --- 초기 로딩 ---
 document.addEventListener('DOMContentLoaded', () => {
   selectedTag = null;
   selectedKeyword = null;
   fetchItems();
 });
 
-// "더보기" 버튼 클릭
-document.getElementById('load-more-btn').addEventListener('click', fetchItems);
-
-// 초기 로딩
-document.addEventListener('DOMContentLoaded', fetchItems);
 </script>
 
 
