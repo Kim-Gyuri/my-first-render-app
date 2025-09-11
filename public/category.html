@@ -223,32 +223,29 @@
       }
 
       function updateMenuImage() {
-        const mainCategory = getQueryParam('category');
-        const subCategory = getQueryParam('subcategory');
-        const menuImage = $('#menu-image');
-        const menuText = $('#menu-text');
+  const mainCategory = getQueryParam('category')?.toUpperCase(); // 대문자 변환
+  const subCategory = getQueryParam('subcategory');
+  const menuImage = $('#menu-image');
+  const menuText = $('#menu-text');
 
-        const imageMap = {
-          'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
-          'PHOTOCARD_DECOR': '/static/images/PHOTOCARD_DECOR.png',
-          'DESK_DECOR': '/static/images/DESK_DECOR.png',
-          'JOURNAL_STATIONERY': '/static/images/JOURNAL_STATIONERY.png',
-          'WRITING_INSTRUMENTS': '/static/images/WRITING_INSTRUMENTS.png',
-          'ACCESSORIES': '/static/images/ACCESSORIES.png'
-        };
+  const imageMap = {
+    'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
+    'PHOTOCARD_DECOR': '/static/images/PHOTOCARD_DECOR.png',
+    'DESK_DECOR': '/static/images/DESK_DECOR.png',
+    'JOURNAL_STATIONERY': '/static/images/JOURNAL_STATIONERY.png',
+    'WRITING_INSTRUMENTS': '/static/images/WRITING_INSTRUMENTS.png',
+    'ACCESSORIES': '/static/images/ACCESSORIES.png'
+  };
 
-        if (mainCategory && imageMap[mainCategory]) {
-          menuImage.attr('src', imageMap[mainCategory]);
-        } else {
-          menuImage.attr('src', '/static/images/default.png');
-        }
+  // 이미지 변경
+  menuImage.attr('src', imageMap[mainCategory] || '/static/images/default.png');
 
-        let text = mainCategory || '카테고리 없음';
-        if (subCategory) {
-          text += ' > ' + subCategory;
-        }
-        menuText.text(text);
-      }
+  // 텍스트 변경
+  let text = mainCategory ? mainCategory.replace(/_/g, ' ') : '카테고리 없음';
+  if (subCategory) text += ' > ' + subCategory;
+  menuText.text(text);
+}
+
 
       // 아이템 카드 HTML 생성
       function createItemCard(item) {
