@@ -159,8 +159,7 @@
 
 <br><br>
 
-<img id="category-image" src="/static/images/default.png" alt="Category Image" class="img-fluid">
-
+<div id="category-image"></div>
 
 <div class="image-grid">
     <div class="image-container" data-sanrio-character="CINNAMOROLL" data-default-img="./static/images/cinnamoroll.png" data-selected-img="./static/images/cinn_pick.png">
@@ -219,26 +218,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log("category:", category, "subcategory:", subcategory);
 
-  // 예시: 카테고리별 이미지 매칭
+  // 카테고리별 이미지 매칭
   const categoryImages = {
-    'POPULAR_SEARCH': '/static/images/popular.png',
-    'PHOTOCARD_DECOR': '/static/images/photocard.png',
-    'DESK_DECOR': '/static/images/desk.png',
-    // 필요한 카테고리만 추가
+    'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
+    'PHOTOCARD_DECOR': '/static/images/PHOTOCARD_DECOR.png',
+    'DESK_DECOR': '/static/images/DESK_DECOR.png',
+    'JOURNAL_STATIONERY': '/static/images/JOURNAL_STATIONERY.png',
+    'WRITING_INSTRUMENTS': '/static/images/WRITING_INSTRUMENTS.png',
+    'ACCESSORIES': '/static/images/ACCESSORIES.png'
   };
 
-  const subcategoryImages = {
-    'DOLL': '/static/images/doll.png',
-    'KEYRING_CHARM': '/static/images/keyring.png',
-    'BROOCH_BADGE': '/static/images/badge.png',
-    // 필요한 서브카테고리만 추가
-  };
-
-  const imgContainer = document.getElementById('category-image');
-  if (subcategory && subcategoryImages[subcategory]) {
-    imgContainer.src = subcategoryImages[subcategory];
-  } else if (category && categoryImages[category]) {
-    imgContainer.src = categoryImages[category];
+  const imageSrc = categoryImages[category];
+  if (imageSrc) {
+    const imgEl = document.createElement('img');
+    imgEl.src = imageSrc;
+    imgEl.alt = category;
+    imgEl.className = "img-fluid"; // Bootstrap 스타일 적용
+    document.getElementById('category-image').appendChild(imgEl);
+  } else {
+    console.warn("이미지를 찾을 수 없는 카테고리입니다:", category);
   }
 });
 </script>
