@@ -14,7 +14,8 @@ const pool = new Pool({
 const path = require('path');
 
 // 정적 파일 서빙
-app.use('/static', express.static(path.join(__dirname, 'public/static')));
+// public 폴더 안에 있는 css, js, img, static 등 모든 파일을 제공
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 루트 접근 시 index.html 반환
 app.get('/', (req, res) => {
