@@ -159,10 +159,7 @@
 
 <br><br>
 
-<div id="menu" class="menu-name">
-    <img class="menu-img" id="menu-image" alt="Main Category Image">
-    <p id="menu-text"></p> 
-</div>
+<img id="category-image" src="/static/images/default.png" alt="Category Image" class="img-fluid">
 
 
 <div class="image-grid">
@@ -210,265 +207,38 @@
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
 </div>
 
-<script>
-   $(document).ready(function () {
-      let currentPage = 0;
-      const size = 8;
-      let isLoading = false;
-      let hasNextPage = true;
-
-      function getQueryParam(param) {
-        const params = new URLSearchParams(window.location.search);
-        return params.get(param);
-      }
-
-      function updateMenuImage() {
-  const mainCategory = getQueryParam('category')?.toUpperCase(); // 대문자 변환
-  const subCategory = getQueryParam('subcategory');
-  const menuImage = $('#menu-image');
-  const menuText = $('#menu-text');
-
-  const imageMap = {
-    'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
-    'PHOTOCARD_DECOR': '/static/images/PHOTOCARD_DECOR.png',
-    'DESK_DECOR': '/static/images/DESK_DECOR.png',
-    'JOURNAL_STATIONERY': '/static/images/JOURNAL_STATIONERY.png',
-    'WRITING_INSTRUMENTS': '/static/images/WRITING_INSTRUMENTS.png',
-    'ACCESSORIES': '/static/images/ACCESSORIES.png'
-  };
-
-  // 이미지 변경
-  menuImage.attr('src', imageMap[mainCategory] || '/static/images/default.png');
-
-  // 텍스트 변경
-  let text = mainCategory ? mainCategory.replace(/_/g, ' ') : '카테고리 없음';
-  if (subCategory) text += ' > ' + subCategory;
-  menuText.text(text);
-}
-
-
-      // 아이템 카드 HTML 생성
-      function createItemCard(item) {
-        return `
-          <div class="item-card">
-            <img src="${item.thumbnail || './static/images/no-image.png'}" alt="${item.name_kor}">
-            <h3>${item.name_kor}</h3>
-            <p>${item.price.toLocaleString()}원</p>
-            <small>${item.description || ''}</small>
-            <div class="tags">
-              ${item.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}
-            </div>
-          </div>
-        `;
-      }
-
-      // API 요청
-      async function fetchItems() {
-        if (isLoading || !hasNextPage) return;
-        isLoading = true;
-
-        const mainCategory = getQueryParam('category');
-        const subCategory = getQueryParam('subcategory');
-        const character = getQueryParam('character');
-        const tag = getQueryParam('tag');
-        const keyword = getQueryParam('keyword');
-
-        let url = `/api/items/category?category=${encodeURIComponent(mainCategory)}&page=${currentPage}&size=${size}`;
-        if (subCategory) url += `&subcategory=${encodeURIComponent(subCategory)}`;
-        if (character) url += `&character=${encodeURIComponent(character)}`;
-        if (tag) url += `&tag=${encodeURIComponent(tag)}`;
-        if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
-
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-
-          const items = data.items || [];
-          items.forEach(item => {
-            $('#item-list').append(createItemCard(item));
-          });
-
-          hasNextPage = data.hasNextPage;
-          if (hasNextPage) {
-            currentPage++;
-          } else {
-            observer.disconnect(); // 더 이상 로드 안 함
-          }
-        } catch (err) {
-          console.error('데이터 불러오기 실패:', err);
-        } finally {
-          isLoading = false;
-        }
-      }
-
-      // IntersectionObserver로 무한스크롤 처리
-      const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          fetchItems();
-        }
-      });
-      observer.observe(document.querySelector('#load-more'));
-
-      // 초기 실행
-      updateMenuImage();
-      fetchItems();
-    });
-</script>
-
-
-<script>
-let currentPage = 0;
-let loading = false;
-let selectedCharacter = null; // 선택한 캐릭터
-let selectedTag = null;       // 선택한 태그
-let selectedKeyword = null;   // 상품명 검색어
-const pageSize = 8;
-
-// --- 산리오 캐릭터 클릭 이벤트 ---
-document.querySelectorAll('.image-container').forEach(container => {
-  container.addEventListener('click', () => {
-    if (container.classList.contains('selected')) {
-      container.classList.remove('selected');
-      container.querySelector('img').src = container.dataset.defaultImg;
-      selectedCharacter = null;
-    } else {
-      document.querySelectorAll('.image-container').forEach(c => {
-        c.classList.remove('selected');
-        c.querySelector('img').src = c.dataset.defaultImg;
-      });
-      container.classList.add('selected');
-      container.querySelector('img').src = container.dataset.selectedImg;
-      selectedCharacter = container.dataset.sanrioCharacter;
-    }
-
-    resetAndFetch();
-  });
-});
-
-// --- 검색폼 제출 이벤트 ---
-document.getElementById('searchForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const keyword = document.getElementById('keyword').value.trim();
-  const searchType = document.getElementById('searchType').value;
-
-  if (!keyword) {
-    selectedTag = null;
-    selectedKeyword = null;
-  } else if (searchType === 'itemName') {
-    selectedKeyword = keyword;
-    selectedTag = null;
-  } else {
-    selectedTag = keyword;
-    selectedKeyword = null;
-  }
-
-  resetAndFetch();
-});
-
-// --- 카드뷰 태그 클릭 이벤트 ---
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('badge')) {
-    selectedTag = e.target.textContent.replace('#', '');
-    selectedKeyword = null;
-
-    // 검색창에도 입력
-    document.getElementById('keyword').value = selectedTag;
-    document.getElementById('searchType').value = 'tag';
-
-    resetAndFetch();
-  }
-});
-
-// --- fetchItems 함수 ---
-async function fetchItems() {
-  if (loading) return;
-  loading = true;
-
-  try {
-    let url = `/api/items/category?page=${currentPage}&size=${pageSize}`;
-    if (selectedCharacter) url += `&character=${selectedCharacter}`;
-    if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
-    if (selectedKeyword) url += `&keyword=${encodeURIComponent(selectedKeyword)}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-    const items = data.items || [];
-
-    const results = document.getElementById('results');
-
-    if (currentPage === 0 && items.length === 0) {
-      results.innerHTML = '<p class="text-center">등록된 상품이 없습니다.</p>';
-      document.getElementById('load-more-btn').style.display = 'none';
-      return;
-    }
-
-    let row = results.lastElementChild;
-    if (!row || !row.classList.contains('row')) {
-      row = document.createElement('div');
-      row.className = 'row';
-      results.appendChild(row);
-    }
-
-    items.forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'col-md-3 mb-4';
-      card.innerHTML = `
-        <div class="card h-100">
-          <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
-          <div class="card-body text-center">
-            <h5>${item.name_kor}</h5>
-            <p>${item.price}원</p>
-            <div class="tag-container mt-3">
-              ${item.tags.map(tag => `<span class="badge bg-hashtag">#${tag}</span>`).join(' ')}
-            </div>
-          </div>
-        </div>
-      `;
-      row.appendChild(card);
-
-      // 4개 단위로 새 row 생성
-      if ((row.children.length % 4 === 0) && (index !== items.length - 1)) {
-        row = document.createElement('div');
-        row.className = 'row';
-        results.appendChild(row);
-      }
-    });
-
-    currentPage++;
-    document.getElementById('load-more-btn').style.display = (items.length < pageSize) ? 'none' : 'inline-block';
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading = false;
-  }
-
-  if (items.length === 0) { 
-        alert("마지막 상품입니다."); 
-        document.getElementById('load-more-btn').style.display = 'none'; 
-    }
-}
-
-// --- 페이지 초기화 후 fetch ---
-function resetAndFetch() {
-  currentPage = 0;
-  document.getElementById('results').innerHTML = '';
-  document.getElementById('load-more-btn').style.display = 'inline-block';
-  fetchItems();
-}
-
-// --- "더보기" 버튼 클릭 ---
-document.getElementById('load-more-btn').addEventListener('click', fetchItems);
-
-// --- 초기 로딩 ---
-document.addEventListener('DOMContentLoaded', () => {
-  selectedTag = null;
-  selectedKeyword = null;
-  fetchItems();
-});
-
-</script>
-
 
 </body>
 </html>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const category = params.get('category');
+  const subcategory = params.get('subcategory');
+
+  console.log("category:", category, "subcategory:", subcategory);
+
+  // 예시: 카테고리별 이미지 매칭
+  const categoryImages = {
+    'POPULAR_SEARCH': '/static/images/popular.png',
+    'PHOTOCARD_DECOR': '/static/images/photocard.png',
+    'DESK_DECOR': '/static/images/desk.png',
+    // 필요한 카테고리만 추가
+  };
+
+  const subcategoryImages = {
+    'DOLL': '/static/images/doll.png',
+    'KEYRING_CHARM': '/static/images/keyring.png',
+    'BROOCH_BADGE': '/static/images/badge.png',
+    // 필요한 서브카테고리만 추가
+  };
+
+  const imgContainer = document.getElementById('category-image');
+  if (subcategory && subcategoryImages[subcategory]) {
+    imgContainer.src = subcategoryImages[subcategory];
+  } else if (category && categoryImages[category]) {
+    imgContainer.src = categoryImages[category];
+  }
+});
+</script>
