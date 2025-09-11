@@ -203,51 +203,119 @@
 </form>
 <hr />
 <br><br>
+
+
 <div id="results"></div>
 <div class="text-center mt-4">
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
 </div>
 
 <script>
-$(document).ready(function() {
-    function getQueryParam(param) {
+   $(document).ready(function () {
+      let currentPage = 0;
+      const size = 8;
+      let isLoading = false;
+      let hasNextPage = true;
+
+      function getQueryParam(param) {
         const params = new URLSearchParams(window.location.search);
         return params.get(param);
-    }
+      }
 
-    function updateMenuImage() {
-        const mainCategory = getQueryParam('mainCategory');
-        const subCategory = getQueryParam('subCategory');
+      function updateMenuImage() {
+        const mainCategory = getQueryParam('category');
+        const subCategory = getQueryParam('subcategory');
         const menuImage = $('#menu-image');
         const menuText = $('#menu-text');
 
-        // 메인 카테고리별 이미지 경로 매핑
         const imageMap = {
-            'POPULAR_SEARCH': './static/images/POPULAR_SEARCH.png',
-            'PHOTOCARD_DECOR': './static/images/PHOTOCARD_DECOR.png',
-            'DESK_DECOR': './static/images/DESK_DECOR.png',
-            'JOURNAL_STATIONERY': './static/images/JOURNAL_STATIONERY.png',
-            'WRITING_INSTRUMENTS': './static/images/WRITING_INSTRUMENTS.png',
-            'ACCESSORIES': './static/images/ACCESSORIES.png'
+          'POPULAR_SEARCH': './static/images/POPULAR_SEARCH.png',
+          'PHOTOCARD_DECOR': './static/images/PHOTOCARD_DECOR.png',
+          'DESK_DECOR': './static/images/DESK_DECOR.png',
+          'JOURNAL_STATIONERY': './static/images/JOURNAL_STATIONERY.png',
+          'WRITING_INSTRUMENTS': './static/images/WRITING_INSTRUMENTS.png',
+          'ACCESSORIES': './static/images/ACCESSORIES.png'
         };
 
-        // 이미지 업데이트
         if (mainCategory && imageMap[mainCategory]) {
-            menuImage.attr('src', imageMap[mainCategory]);
+          menuImage.attr('src', imageMap[mainCategory]);
         } else {
-            menuImage.attr('src', './static/images/default.png'); // 기본 이미지
+          menuImage.attr('src', './static/images/default.png');
         }
 
-        // 텍스트 업데이트 (예: "POPULAR_SEARCH - CAPSULE_TOY")
         let text = mainCategory || '카테고리 없음';
         if (subCategory) {
-            text += ' > ' + subCategory;
+          text += ' > ' + subCategory;
         }
         menuText.text(text);
-    }
+      }
 
-    updateMenuImage();
-});
+      // 아이템 카드 HTML 생성
+      function createItemCard(item) {
+        return `
+          <div class="item-card">
+            <img src="${item.thumbnail || './static/images/no-image.png'}" alt="${item.name_kor}">
+            <h3>${item.name_kor}</h3>
+            <p>${item.price.toLocaleString()}원</p>
+            <small>${item.description || ''}</small>
+            <div class="tags">
+              ${item.tags.map(tag => `<span class="tag">#${tag}</span>`).join(' ')}
+            </div>
+          </div>
+        `;
+      }
+
+      // API 요청
+      async function fetchItems() {
+        if (isLoading || !hasNextPage) return;
+        isLoading = true;
+
+        const mainCategory = getQueryParam('category');
+        const subCategory = getQueryParam('subcategory');
+        const character = getQueryParam('character');
+        const tag = getQueryParam('tag');
+        const keyword = getQueryParam('keyword');
+
+        let url = `/api/items/category?category=${encodeURIComponent(mainCategory)}&page=${currentPage}&size=${size}`;
+        if (subCategory) url += `&subcategory=${encodeURIComponent(subCategory)}`;
+        if (character) url += `&character=${encodeURIComponent(character)}`;
+        if (tag) url += `&tag=${encodeURIComponent(tag)}`;
+        if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+
+          const items = data.items || [];
+          items.forEach(item => {
+            $('#item-list').append(createItemCard(item));
+          });
+
+          hasNextPage = data.hasNextPage;
+          if (hasNextPage) {
+            currentPage++;
+          } else {
+            observer.disconnect(); // 더 이상 로드 안 함
+          }
+        } catch (err) {
+          console.error('데이터 불러오기 실패:', err);
+        } finally {
+          isLoading = false;
+        }
+      }
+
+      // IntersectionObserver로 무한스크롤 처리
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          fetchItems();
+        }
+      });
+      observer.observe(document.querySelector('#load-more'));
+
+      // 초기 실행
+      updateMenuImage();
+      fetchItems();
+    });
 </script>
 
 

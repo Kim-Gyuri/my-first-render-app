@@ -92,10 +92,20 @@ app.get("/api/items/list", async (req, res) => {
 
 // 카테고리 api
 app.get("/api/items/category", async (req, res) => {
-  const { category, subcategory } = req.query;
+  const {
+    category,
+    subcategory,
+    page = 0,
+    size = 8,
+    character,
+    tag,
+    keyword
+  } = req.query;
+
+  const offset = page * size;
 
   try {
-    const query = `
+    let baseQuery = `
       SELECT 
           i.item_id,
           i.name_kor,
@@ -112,16 +122,88 @@ app.get("/api/items/category", async (req, res) => {
           ON i.item_id = ii.item_id AND ii.is_main_img = 'Y'
       LEFT JOIN hash_tag ht 
           ON i.item_id = ht.item_id
-      WHERE i.main_category = $1 
-        AND i.sub_category = $2
+      WHERE i.main_category = $1
+    `;
+    let values = [category];
+    let idx = 2;
+
+    // 서브카테고리 필터
+    if (subcategory) {
+      baseQuery += ` AND i.sub_category = $${idx++}`;
+      values.push(subcategory);
+    }
+
+    // 캐릭터 필터
+    if (character) {
+      baseQuery += ` AND i.character = $${idx++}`;
+      values.push(character);
+    }
+
+    // 태그 필터
+    if (tag) {
+      baseQuery += ` AND EXISTS (
+        SELECT 1 FROM hash_tag h
+        WHERE h.item_id = i.item_id AND h.tag_option = $${idx++}
+      )`;
+      values.push(tag);
+    }
+
+    // 키워드 검색 (이름, 설명에서 검색)
+    if (keyword) {
+      baseQuery += ` AND (i.name_kor ILIKE $${idx} OR i.description ILIKE $${idx})`;
+      values.push(`%${keyword}%`);
+      idx++;
+    }
+
+    baseQuery += `
       GROUP BY i.item_id, ii.img_url
       ORDER BY i.item_id DESC
+      LIMIT $${idx++} OFFSET $${idx}
     `;
+    values.push(size, offset);
 
-    const values = [category, subcategory];
-    const result = await pool.query(query, values);
+    const result = await pool.query(baseQuery, values);
 
-    res.json(result.rows);
+    // 전체 개수 조회 (페이지네이션용)
+    let countQuery = `
+      SELECT COUNT(DISTINCT i.item_id) AS total
+      FROM item i
+      LEFT JOIN hash_tag ht ON i.item_id = ht.item_id
+      WHERE i.main_category = $1
+    `;
+    let countValues = [category];
+    idx = 2;
+
+    if (subcategory) {
+      countQuery += ` AND i.sub_category = $${idx++}`;
+      countValues.push(subcategory);
+    }
+    if (character) {
+      countQuery += ` AND i.character = $${idx++}`;
+      countValues.push(character);
+    }
+    if (tag) {
+      countQuery += ` AND EXISTS (
+        SELECT 1 FROM hash_tag h
+        WHERE h.item_id = i.item_id AND h.tag_option = $${idx++}
+      )`;
+      countValues.push(tag);
+    }
+    if (keyword) {
+      countQuery += ` AND (i.name_kor ILIKE $${idx} OR i.description ILIKE $${idx})`;
+      countValues.push(`%${keyword}%`);
+    }
+
+    const countResult = await pool.query(countQuery, countValues);
+    const totalCount = parseInt(countResult.rows[0].total, 10);
+
+    res.json({
+      items: result.rows,
+      page: parseInt(page, 10),
+      size: parseInt(size, 10),
+      totalCount,
+      hasNextPage: offset + result.rows.length < totalCount
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "서버 오류" });
