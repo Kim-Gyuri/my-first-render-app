@@ -90,6 +90,43 @@ app.get("/api/items/list", async (req, res) => {
 });
 
 
+// 카테고리 api
+app.get("/api/items/category", async (req, res) => {
+  const { category, subcategory } = req.query;
+
+  try {
+    const query = `
+      SELECT 
+          i.item_id,
+          i.name_kor,
+          i.price,
+          i.description,
+          i.sub_category,
+          ii.img_url AS thumbnail,
+          COALESCE(
+              json_agg(ht.tag_option) FILTER (WHERE ht.tag_option IS NOT NULL),
+              '[]'
+          ) AS tags
+      FROM item i
+      LEFT JOIN item_img ii 
+          ON i.item_id = ii.item_id AND ii.is_main_img = 'Y'
+      LEFT JOIN hash_tag ht 
+          ON i.item_id = ht.item_id
+      WHERE i.main_category = $1 
+        AND i.sub_category = $2
+      GROUP BY i.item_id, ii.img_url
+      ORDER BY i.item_id DESC
+    `;
+
+    const values = [category, subcategory];
+    const result = await pool.query(query, values);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "서버 오류" });
+  }
+});
 
 
 

@@ -158,6 +158,11 @@
 </nav>
 
 <br><br>
+
+<div id="menu" class="menu-name">
+    <img  class="menu-img" id="menu-image" alt="Main Category Image">
+</div>
+
 <div class="image-grid">
     <div class="image-container" data-sanrio-character="CINNAMOROLL" data-default-img="./static/images/cinnamoroll.png" data-selected-img="./static/images/cinn_pick.png">
         <img src="./static/images/cinnamoroll.png" alt="Image 1">
@@ -200,6 +205,49 @@
 <div class="text-center mt-4">
   <button id="load-more-btn" class="btn btn-outline-secondary">더보기</button>
 </div>
+
+<script>
+$(document).ready(function() {
+    function getQueryParam(param) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(param);
+    }
+
+    function updateMenuImage() {
+        const mainCategory = getQueryParam('mainCategory');
+        const subCategory = getQueryParam('subCategory');
+        const menuImage = $('#menu-image');
+        const menuText = $('#menu-text');
+
+        // 메인 카테고리별 이미지 경로 매핑
+        const imageMap = {
+            'POPULAR_SEARCH': './static/images/POPULAR_SEARCH.png',
+            'PHOTOCARD_DECOR': './static/images/PHOTOCARD_DECOR.png',
+            'DESK_DECOR': './static/images/DESK_DECOR.png',
+            'JOURNAL_STATIONERY': './static/images/JOURNAL_STATIONERY.png',
+            'WRITING_INSTRUMENTS': './static/images/WRITING_INSTRUMENTS.png',
+            'ACCESSORIES': './static/images/ACCESSORIES.png'
+        };
+
+        // 이미지 업데이트
+        if (mainCategory && imageMap[mainCategory]) {
+            menuImage.attr('src', imageMap[mainCategory]);
+        } else {
+            menuImage.attr('src', '/images/default.png'); // 기본 이미지
+        }
+
+        // 텍스트 업데이트 (예: "POPULAR_SEARCH - CAPSULE_TOY")
+        let text = mainCategory || '카테고리 없음';
+        if (subCategory) {
+            text += ' > ' + subCategory;
+        }
+        menuText.text(text);
+    }
+
+    updateMenuImage();
+});
+</script>
+
 
 <script>
 let currentPage = 0;
@@ -270,7 +318,7 @@ async function fetchItems() {
   loading = true;
 
   try {
-    let url = `/api/items/list?page=${currentPage}&size=${pageSize}`;
+    let url = `/api/items/category?page=${currentPage}&size=${pageSize}`;
     if (selectedCharacter) url += `&character=${selectedCharacter}`;
     if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
     if (selectedKeyword) url += `&keyword=${encodeURIComponent(selectedKeyword)}`;
@@ -350,33 +398,6 @@ document.addEventListener('DOMContentLoaded', () => {
   selectedTag = null;
   selectedKeyword = null;
   fetchItems();
-});
-
-</script>
-
-<script>
-  $(document).ready(function() {
-    function handleCategoryClick(event) {
-        event.preventDefault(); // a태그 기본 이동 막기
-
-        const mainCategory = $(this).data('category');
-        const subCategory = $(this).data('subcategory');
-
-        console.log("main =", mainCategory);
-        console.log("sub =", subCategory);
-
-        if (mainCategory) {
-            // category.html로 이동하면서 파라미터 붙여서 전달
-            let url = `category.html?category=${encodeURIComponent(mainCategory)}`;
-            if (subCategory) {
-                url += `&subcategory=${encodeURIComponent(subCategory)}`;
-            }
-            window.location.href = url;
-        }
-    }
-
-    // 모든 dropdown-item에 이벤트 바인딩
-    $('.dropdown-item').on('click', handleCategoryClick);
 });
 
 </script>
