@@ -12,7 +12,14 @@ const pool = new Pool({
 
 // 정적 파일 서빙
 const path = require('path');
+
+// 정적 파일 서빙
 app.use('/static', express.static(path.join(__dirname, 'public/static')));
+
+// 루트 접근 시 index.html 반환
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 
 
