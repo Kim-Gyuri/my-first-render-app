@@ -11,8 +11,6 @@ const pool = new Pool({
 });
 
 // 정적 파일 서빙
-app.use(express.static('public'));
-
 const path = require('path');
 app.use('/static', express.static(path.join(__dirname, 'public/static')));
 
