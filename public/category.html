@@ -160,8 +160,10 @@
 <br><br>
 
 <div id="menu" class="menu-name">
-    <img  class="menu-img" id="menu-image" alt="Main Category Image">
+    <img class="menu-img" id="menu-image" alt="Main Category Image">
+    <p id="menu-text"></p> 
 </div>
+
 
 <div class="image-grid">
     <div class="image-container" data-sanrio-character="CINNAMOROLL" data-default-img="./static/images/cinnamoroll.png" data-selected-img="./static/images/cinn_pick.png">
@@ -233,7 +235,7 @@ $(document).ready(function() {
         if (mainCategory && imageMap[mainCategory]) {
             menuImage.attr('src', imageMap[mainCategory]);
         } else {
-            menuImage.attr('src', '/images/default.png'); // 기본 이미지
+            menuImage.attr('src', './static/images/default.png'); // 기본 이미지
         }
 
         // 텍스트 업데이트 (예: "POPULAR_SEARCH - CAPSULE_TOY")
