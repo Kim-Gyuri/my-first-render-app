@@ -213,29 +213,117 @@
 </html>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const category = params.get('category');
-  const subcategory = params.get('subcategory');
+document.addEventListener('DOMContentLoaded', () => {
+    const categoryImages = {
+        'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
+        'PHOTOCARD_DECOR': '/static/images/PHOTOCARD_DECOR.png',
+        'DESK_DECOR': '/static/images/DESK_DECOR.png',
+        'JOURNAL_STATIONERY': '/static/images/JOURNAL_STATIONERY.png',
+        'WRITING_INSTRUMENTS': '/static/images/WRITING_INSTRUMENTS.png',
+        'ACCESSORIES': '/static/images/ACCESSORIES.png' 
+    };
 
-  console.log("category:", category, "subcategory:", subcategory);
+    let params = new URLSearchParams(window.location.search);
+    let selectedCategory = params.get('category') || 'POPULAR_SEARCH';
+    let selectedSubcategory = params.get('subcategory') || null;
+    const imgEl = document.getElementById('category-image');
 
-  const categoryImages = {
-    'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
-    'PHOTOCARD_DECOR': '/static/images/PHOTOCARD_DECOR.png',
-    'DESK_DECOR': '/static/images/DESK_DECOR.png',
-    'JOURNAL_STATIONERY': '/static/images/JOURNAL_STATIONERY.png',
-    'WRITING_INSTRUMENTS': '/static/images/WRITING_INSTRUMENTS.png',
-    'ACCESSORIES': '/static/images/ACCESSORIES.png'
-  };
+    function updateUI() {
+        // 카테고리 이미지 변경
+        imgEl.src = categoryImages[selectedCategory] || '/static/images/default.png';
+        // 여기서 fetchItems 호출
+        fetchItems(selectedCategory, selectedSubcategory);
+    }
 
-  const imgEl = document.getElementById('category-image');
-  if (categoryImages[category]) {
-    imgEl.src = categoryImages[category];
-    imgEl.alt = category; // 선택적: alt 속성도 업데이트
-  } else {
-    console.warn("이미지를 찾을 수 없는 카테고리입니다:", category);
-  }
+    // 초기 UI 세팅
+    updateUI();
+
+    // 메뉴 클릭 이벤트
+    document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', e => {
+            e.preventDefault();
+            selectedCategory = item.dataset.category || selectedCategory;
+            selectedSubcategory = item.dataset.subcategory || null;
+
+            // URL 업데이트 (페이지 새로고침 없이)
+            const newUrl = `${window.location.pathname}?category=${encodeURIComponent(selectedCategory)}${selectedSubcategory ? `&subcategory=${encodeURIComponent(selectedSubcategory)}` : ''}`;
+            window.history.pushState({}, '', newUrl);
+
+            updateUI();
+        });
+    });
+
+    // 뒤로가기/앞으로가기 처리
+    window.addEventListener('popstate', () => {
+        params = new URLSearchParams(window.location.search);
+        selectedCategory = params.get('category') || 'POPULAR_SEARCH';
+        selectedSubcategory = params.get('subcategory') || null;
+        updateUI();
+    });
+
+    // --- fetchItems 함수 예제 ---
+    let currentPage = 0;
+    const pageSize = 8;
+    let loading = false;
+
+    async function fetchItems(category, subcategory) {
+        if (loading) return;
+        loading = true;
+
+        try {
+            let url = `/api/items/category?category=${encodeURIComponent(category)}&page=${currentPage}&size=${pageSize}`;
+            if (subcategory) url += `&subcategory=${encodeURIComponent(subcategory)}`;
+
+            const res = await fetch(url);
+            const data = await res.json();
+            const items = data.items || [];
+
+            const results = document.getElementById('results');
+            if (currentPage === 0) results.innerHTML = '';
+
+            let row = results.lastElementChild;
+            if (!row || !row.classList.contains('row')) {
+                row = document.createElement('div');
+                row.className = 'row';
+                results.appendChild(row);
+            }
+
+            items.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'col-md-3 mb-4';
+                card.innerHTML = `
+                    <div class="card h-100">
+                        <img class="card-img-top" src="${item.thumbnail}" alt="${item.name_kor}">
+                        <div class="card-body text-center">
+                            <h5>${item.name_kor}</h5>
+                            <p>${item.price}원</p>
+                            <div class="tag-container mt-3">
+                                ${item.tags.map(tag => `<span class="badge bg-hashtag">#${tag}</span>`).join(' ')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                row.appendChild(card);
+
+                if ((row.children.length % 4 === 0) && (index !== items.length - 1)) {
+                    row = document.createElement('div');
+                    row.className = 'row';
+                    results.appendChild(row);
+                }
+            });
+
+            currentPage++;
+            document.getElementById('load-more-btn').style.display = (items.length < pageSize) ? 'none' : 'inline-block';
+        } catch (err) {
+            console.error(err);
+        } finally {
+            loading = false;
+        }
+    }
+
+    // 더보기 버튼
+    document.getElementById('load-more-btn').addEventListener('click', () => {
+        fetchItems(selectedCategory, selectedSubcategory);
+    });
 });
-
 </script>
