@@ -223,15 +223,27 @@ document.addEventListener('DOMContentLoaded', () => {
         'ACCESSORIES': '/static/images/ACCESSORIES.png' 
     };
 
+    // URL 파라미터 읽기
     let params = new URLSearchParams(window.location.search);
     let selectedCategory = params.get('category') || 'POPULAR_SEARCH';
     let selectedSubcategory = params.get('subcategory') || null;
     const imgEl = document.getElementById('category-image');
 
+    let currentPage = 0;
+    const pageSize = 8;
+    let loading = false;
+
+    // UI 갱신 함수
     function updateUI() {
         // 카테고리 이미지 변경
         imgEl.src = categoryImages[selectedCategory] || '/static/images/default.png';
-        // 여기서 fetchItems 호출
+
+        // 페이지 초기화
+        currentPage = 0;
+        const results = document.getElementById('results');
+        results.innerHTML = '';
+
+        // 새 카테고리 데이터 fetch
         fetchItems(selectedCategory, selectedSubcategory);
     }
 
@@ -242,13 +254,20 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', e => {
             e.preventDefault();
-            selectedCategory = item.dataset.category || selectedCategory;
-            selectedSubcategory = item.dataset.subcategory || null;
 
-            // URL 업데이트 (페이지 새로고침 없이)
+            const newCategory = item.dataset.category || selectedCategory;
+            const newSubcategory = item.dataset.subcategory || null;
+
+            if (newCategory === selectedCategory && newSubcategory === selectedSubcategory) return;
+
+            selectedCategory = newCategory;
+            selectedSubcategory = newSubcategory;
+
+            // URL 업데이트
             const newUrl = `${window.location.pathname}?category=${encodeURIComponent(selectedCategory)}${selectedSubcategory ? `&subcategory=${encodeURIComponent(selectedSubcategory)}` : ''}`;
             window.history.pushState({}, '', newUrl);
 
+            // UI 갱신
             updateUI();
         });
     });
@@ -261,11 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 
-    // --- fetchItems 함수 예제 ---
-    let currentPage = 0;
-    const pageSize = 8;
-    let loading = false;
-
+    // 아이템 가져오기 함수
     async function fetchItems(category, subcategory) {
         if (loading) return;
         loading = true;
@@ -279,8 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const items = data.items || [];
 
             const results = document.getElementById('results');
-            if (currentPage === 0) results.innerHTML = '';
 
+            // row 처리
             let row = results.lastElementChild;
             if (!row || !row.classList.contains('row')) {
                 row = document.createElement('div');
@@ -305,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 row.appendChild(card);
 
+                // 4개 단위로 새 row 생성
                 if ((row.children.length % 4 === 0) && (index !== items.length - 1)) {
                     row = document.createElement('div');
                     row.className = 'row';
