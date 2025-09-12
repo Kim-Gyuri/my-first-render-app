@@ -213,62 +213,9 @@
 </html>
 
 <script>
-// --- 산리오 캐릭터 클릭 이벤트 ---
-document.querySelectorAll('.image-container').forEach(container => {
-  container.addEventListener('click', () => {
-    if (container.classList.contains('selected')) {
-      container.classList.remove('selected');
-      container.querySelector('img').src = container.dataset.defaultImg;
-      selectedCharacter = null;
-    } else {
-      document.querySelectorAll('.image-container').forEach(c => {
-        c.classList.remove('selected');
-        c.querySelector('img').src = c.dataset.defaultImg;
-      });
-      container.classList.add('selected');
-      container.querySelector('img').src = container.dataset.selectedImg;
-      selectedCharacter = container.dataset.sanrioCharacter;
-    }
-
-    resetAndFetch();
-  });
-});
-
-
-// --- 검색폼 제출 이벤트 ---
-document.getElementById('searchForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const keyword = document.getElementById('keyword').value.trim();
-  const searchType = document.getElementById('searchType').value;
-
-  if (!keyword) {
-    selectedTag = null;
-    selectedKeyword = null;
-  } else if (searchType === 'itemName') {
-    selectedKeyword = keyword;
-    selectedTag = null;
-  } else {
-    selectedTag = keyword;
-    selectedKeyword = null;
-  }
-
-  resetAndFetch();
-});
-
-// --- 카드뷰 태그 클릭 이벤트 ---
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('badge')) {
-    selectedTag = e.target.textContent.replace('#', '');
-    selectedKeyword = null;
-
-    // 검색창에도 입력
-    document.getElementById('keyword').value = selectedTag;
-    document.getElementById('searchType').value = 'tag';
-
-    resetAndFetch();
-  }
-});
-
+let selectedCharacter = null;
+let selectedTag = null;
+let selectedKeyword = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const categoryImages = {
@@ -290,18 +237,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageSize = 8;
     let loading = false;
 
+    // --- resetAndFetch 함수 ---
+    function resetAndFetch() {
+        currentPage = 0;
+        document.getElementById('results').innerHTML = '';
+        fetchItems(selectedCategory, selectedSubcategory);
+    }
+
+    // --- 산리오 캐릭터 클릭 이벤트 ---
+    document.querySelectorAll('.image-container').forEach(container => {
+        container.addEventListener('click', () => {
+            if (container.classList.contains('selected')) {
+                container.classList.remove('selected');
+                container.querySelector('img').src = container.dataset.defaultImg;
+                selectedCharacter = null;
+            } else {
+                document.querySelectorAll('.image-container').forEach(c => {
+                    c.classList.remove('selected');
+                    c.querySelector('img').src = c.dataset.defaultImg;
+                });
+                container.classList.add('selected');
+                container.querySelector('img').src = container.dataset.selectedImg;
+                selectedCharacter = container.dataset.sanrioCharacter;
+            }
+            resetAndFetch();
+        });
+    });
+
+    // --- 검색폼 제출 이벤트 ---
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const keyword = document.getElementById('keyword').value.trim();
+        const searchType = document.getElementById('searchType').value;
+
+        if (!keyword) {
+            selectedTag = null;
+            selectedKeyword = null;
+        } else if (searchType === 'itemName') {
+            selectedKeyword = keyword;
+            selectedTag = null;
+        } else {
+            selectedTag = keyword;
+            selectedKeyword = null;
+        }
+
+        resetAndFetch();
+    });
+
+    // --- 카드뷰 태그 클릭 이벤트 ---
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('badge')) {
+            selectedTag = e.target.textContent.replace('#', '');
+            selectedKeyword = null;
+
+            // 검색창에도 입력
+            document.getElementById('keyword').value = selectedTag;
+            document.getElementById('searchType').value = 'tag';
+
+            resetAndFetch();
+        }
+    });
+
     // UI 갱신 함수
     function updateUI() {
-        // 카테고리 이미지 변경
         imgEl.src = categoryImages[selectedCategory] || '/static/images/default.png';
-
-        // 페이지 초기화
-        currentPage = 0;
-        const results = document.getElementById('results');
-        results.innerHTML = '';
-
-        // 새 카테고리 데이터 fetch
-        fetchItems(selectedCategory, selectedSubcategory);
+        resetAndFetch();
     }
 
     // 초기 UI 세팅
@@ -311,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', e => {
             e.preventDefault();
-
             const newCategory = item.dataset.category || selectedCategory;
             const newSubcategory = item.dataset.subcategory || null;
 
@@ -320,11 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedCategory = newCategory;
             selectedSubcategory = newSubcategory;
 
-            // URL 업데이트
             const newUrl = `${window.location.pathname}?category=${encodeURIComponent(selectedCategory)}${selectedSubcategory ? `&subcategory=${encodeURIComponent(selectedSubcategory)}` : ''}`;
             window.history.pushState({}, '', newUrl);
 
-            // UI 갱신
             updateUI();
         });
     });
@@ -337,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateUI();
     });
 
-    // 아이템 가져오기 함수
+    // --- 아이템 가져오기 함수 ---
     async function fetchItems(category, subcategory) {
         if (loading) return;
         loading = true;
@@ -345,6 +342,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             let url = `/api/items/category?category=${encodeURIComponent(category)}&page=${currentPage}&size=${pageSize}`;
             if (subcategory) url += `&subcategory=${encodeURIComponent(subcategory)}`;
+            if (selectedCharacter) url += `&character=${encodeURIComponent(selectedCharacter)}`;
+            if (selectedTag) url += `&tag=${encodeURIComponent(selectedTag)}`;
+            if (selectedKeyword) url += `&keyword=${encodeURIComponent(selectedKeyword)}`;
 
             const res = await fetch(url);
             const data = await res.json();
@@ -352,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const results = document.getElementById('results');
 
-            // row 처리
             let row = results.lastElementChild;
             if (!row || !row.classList.contains('row')) {
                 row = document.createElement('div');
@@ -377,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 row.appendChild(card);
 
-                // 4개 단위로 새 row 생성
                 if ((row.children.length % 4 === 0) && (index !== items.length - 1)) {
                     row = document.createElement('div');
                     row.className = 'row';
@@ -400,3 +398,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+
