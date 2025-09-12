@@ -213,7 +213,26 @@
 </html>
 
 <script>
+// --- 산리오 캐릭터 클릭 이벤트 ---
+document.querySelectorAll('.image-container').forEach(container => {
+  container.addEventListener('click', () => {
+    if (container.classList.contains('selected')) {
+      container.classList.remove('selected');
+      container.querySelector('img').src = container.dataset.defaultImg;
+      selectedCharacter = null;
+    } else {
+      document.querySelectorAll('.image-container').forEach(c => {
+        c.classList.remove('selected');
+        c.querySelector('img').src = c.dataset.defaultImg;
+      });
+      container.classList.add('selected');
+      container.querySelector('img').src = container.dataset.selectedImg;
+      selectedCharacter = container.dataset.sanrioCharacter;
+    }
 
+    resetAndFetch();
+  });
+});
 
 
 // --- 검색폼 제출 이벤트 ---
