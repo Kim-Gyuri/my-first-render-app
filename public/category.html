@@ -213,6 +213,44 @@
 </html>
 
 <script>
+
+
+
+// --- 검색폼 제출 이벤트 ---
+document.getElementById('searchForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const keyword = document.getElementById('keyword').value.trim();
+  const searchType = document.getElementById('searchType').value;
+
+  if (!keyword) {
+    selectedTag = null;
+    selectedKeyword = null;
+  } else if (searchType === 'itemName') {
+    selectedKeyword = keyword;
+    selectedTag = null;
+  } else {
+    selectedTag = keyword;
+    selectedKeyword = null;
+  }
+
+  resetAndFetch();
+});
+
+// --- 카드뷰 태그 클릭 이벤트 ---
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('badge')) {
+    selectedTag = e.target.textContent.replace('#', '');
+    selectedKeyword = null;
+
+    // 검색창에도 입력
+    document.getElementById('keyword').value = selectedTag;
+    document.getElementById('searchType').value = 'tag';
+
+    resetAndFetch();
+  }
+});
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const categoryImages = {
         'POPULAR_SEARCH': '/static/images/POPULAR_SEARCH.png',
