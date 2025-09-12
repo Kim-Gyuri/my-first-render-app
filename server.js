@@ -146,7 +146,7 @@ app.get("/api/items/category", async (req, res) => {
 
     // 캐릭터 필터
     if (character) {
-      baseQuery += ` AND i.i.sanrio_characters = $${idx++}`;
+      baseQuery += ` AND i.sanrio_characters = $${idx++}`;
       values.push(character);
     }
 
