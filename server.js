@@ -101,6 +101,7 @@ app.get("/api/items/list", async (req, res) => {
 });
 
 
+
 // 카테고리 api
 app.get("/api/items/category", async (req, res) => {
   const {
@@ -159,7 +160,7 @@ app.get("/api/items/category", async (req, res) => {
       values.push(tag);
     }
 
-    // 키워드 검색 (이름, 설명에서 검색)
+    // 키워드 검색 (이름, 설명)
     if (keyword) {
       baseQuery += ` AND (i.name_kor ILIKE $${idx} OR i.description ILIKE $${idx})`;
       values.push(`%${keyword}%`);
@@ -172,6 +173,11 @@ app.get("/api/items/category", async (req, res) => {
       LIMIT $${idx++} OFFSET $${idx}
     `;
     values.push(size, offset);
+
+    // 🔹 디버깅용 로그
+    console.log("=== Category API Query ===");
+    console.log("SQL Query:", baseQuery);
+    console.log("Values:", values);
 
     const result = await pool.query(baseQuery, values);
 
@@ -190,7 +196,7 @@ app.get("/api/items/category", async (req, res) => {
       countValues.push(subcategory);
     }
     if (character) {
-      countQuery += ` AND i.character = $${idx++}`;
+      countQuery += ` AND i.sanrio_characters = $${idx++}`;
       countValues.push(character);
     }
     if (tag) {
@@ -204,6 +210,11 @@ app.get("/api/items/category", async (req, res) => {
       countQuery += ` AND (i.name_kor ILIKE $${idx} OR i.description ILIKE $${idx})`;
       countValues.push(`%${keyword}%`);
     }
+
+    // 🔹 디버깅용 로그
+    console.log("=== Category Count Query ===");
+    console.log("Count Query:", countQuery);
+    console.log("Count Values:", countValues);
 
     const countResult = await pool.query(countQuery, countValues);
     const totalCount = parseInt(countResult.rows[0].total, 10);
